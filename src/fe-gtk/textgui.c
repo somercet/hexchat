@@ -1,5 +1,6 @@
 /* X-Chat
  * Copyright (C) 1998 Peter Zelezny.
+ * Copyright (c) 2023-2024 somercet
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +34,8 @@
 #include "../common/fe.h"
 #include "../common/text.h"
 #include "gtkutil.h"
-#include "xtext.h"
+//#include "x text.h"
+#include "xcchatview.h"
 #include "maingui.h"
 #include "palette.h"
 #include "textgui.h"
@@ -42,8 +44,10 @@ extern struct text_event te[];
 extern char *pntevts_text[];
 extern char *pntevts[];
 
-static GtkWidget *pevent_dialog = NULL, *pevent_dialog_twid,
+static GtkWidget *pevent_dialog = NULL,
 	*pevent_dialog_list, *pevent_dialog_hlist;
+
+XcChatView *pevent_dialog_twid;
 
 enum
 {
@@ -54,15 +58,17 @@ enum
 };
 
 
-/* this is only used in xtext.c for indented timestamping */
+/* this is only used in x text.c for indented timestamping */
 int
 xtext_get_stamp_str (time_t tim, char **ret)
+//wyzzy despite name, is not part of x_text
 {
 	return get_stamp_str (prefs.hex_stamp_text_format, tim, ret);
 }
 
+//wyzzy easy
 static void
-PrintTextLine (xtext_buffer *xtbuf, unsigned char *text, int len, int indent, time_t timet)
+PrintTextLine (XcChatView *xccv, unsigned char *text, int len, int indent, time_t timet)
 {
 	unsigned char *tab, *new_text;
 	int leftlen;
@@ -85,10 +91,10 @@ PrintTextLine (xtext_buffer *xtbuf, unsigned char *text, int len, int indent, ti
 			memcpy (new_text, stamp, stamp_size);
 			g_free (stamp);
 			memcpy (new_text + stamp_size, text, len);
-			gtk_xtext_append (xtbuf, new_text, len + stamp_size, timet);
+			xc_chat_view_append (xccv, new_text, len + stamp_size, timet);
 			g_free (new_text);
 		} else
-			gtk_xtext_append (xtbuf, text, len, timet);
+			xc_chat_view_append (xccv, text, len, timet);
 		return;
 	}
 
@@ -96,14 +102,15 @@ PrintTextLine (xtext_buffer *xtbuf, unsigned char *text, int len, int indent, ti
 	if (tab && tab < (text + len))
 	{
 		leftlen = tab - text;
-		gtk_xtext_append_indent (xtbuf,
+		xc_chat_view_append_indent (xccv,
 										 text, leftlen, tab + 1, len - (leftlen + 1), timet);
 	} else
-		gtk_xtext_append_indent (xtbuf, 0, 0, text, len, timet);
+		xc_chat_view_append_indent (xccv, 0, 0, text, len, timet);
 }
 
+//wyzzy easy
 void
-PrintTextRaw (void *xtbuf, unsigned char *text, int indent, time_t stamp)
+PrintTextRaw (XcChatView *xccv, unsigned char *text, int indent, time_t stamp)
 {
 	char *last_text = text;
 	int len = 0;
@@ -115,10 +122,10 @@ PrintTextRaw (void *xtbuf, unsigned char *text, int indent, time_t stamp)
 		switch (*text)
 		{
 		case 0:
-			PrintTextLine (xtbuf, last_text, len, indent, stamp);
+			PrintTextLine (xccv, last_text, len, indent, stamp);
 			return;
 		case '\n':
-			PrintTextLine (xtbuf, last_text, len, indent, stamp);
+			PrintTextLine (xccv, last_text, len, indent, stamp);
 			text++;
 			if (*text == 0)
 				return;
@@ -147,13 +154,14 @@ pevent_dialog_close (GtkWidget *wid, gpointer arg)
 	pevent_save (NULL);
 }
 
+//wyzzy easy
 static void
 pevent_edited (GtkCellRendererText *render, gchar *pathstr, gchar *new_text, gpointer data)
 {
 	GtkTreeModel *model = gtk_tree_view_get_model (GTK_TREE_VIEW (pevent_dialog_list));
 	GtkTreePath *path;
 	GtkTreeIter iter;
-	GtkXText *xtext = GTK_XTEXT (pevent_dialog_twid);
+	XcChatView *xccv = pevent_dialog_twid;
 	int len, m;
 	const char *text;
 	char *out;
@@ -199,11 +207,11 @@ pevent_edited (GtkCellRendererText *render, gchar *pathstr, gchar *new_text, gpo
 	out[len + 1] = 0;
 	check_special_chars (out, TRUE);
 
-	PrintTextRaw (xtext->buffer, out, 0, 0);
+	PrintTextRaw (xccv, out, 0, 0);
 	g_free (out);
 
 	/* Scroll to bottom */
-	gtk_adjustment_set_value (xtext->adj, gtk_adjustment_get_upper (xtext->adj));
+	xc_chat_view_push_down_scrollbar (xccv);
 
 	/* save this when we exit */
 	prefs.save_pevents = 1;
@@ -330,7 +338,8 @@ pevent_test_cb (GtkWidget * wid, GtkWidget * twid)
 		out[len + 1] = 0;
 		check_special_chars (out, TRUE);
 
-		PrintTextRaw (GTK_XTEXT (twid)->buffer, out, 0, 0);
+//wyzzy easy
+		PrintTextRaw (XC_CHAT_VIEW (twid), out, 0, 0);
 		g_free (out);
 	}
 }
@@ -462,11 +471,12 @@ pevent_dialog_show ()
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (wid), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 	gtk_box_pack_start (GTK_BOX (vbox), wid, FALSE, TRUE, 0);
 
-	pevent_dialog_twid = gtk_xtext_new (colors, 0);
-	gtk_widget_set_sensitive (pevent_dialog_twid, FALSE);
-	gtk_widget_set_size_request (pevent_dialog_twid, -1, 75);
-	gtk_container_add (GTK_CONTAINER (wid), pevent_dialog_twid);
-	gtk_xtext_set_font (GTK_XTEXT (pevent_dialog_twid), prefs.hex_text_font);
+//wyzzy easy
+	pevent_dialog_twid = xc_chat_view_new (); //(colors, 0);
+	//gtk_widget_set_sensitive (pevent_dialog_twid, FALSE);
+	//gtk_widget_set_size_request (pevent_dialog_twid, -1, 75);
+	gtk_container_add (GTK_CONTAINER (wid), GTK_WIDGET (pevent_dialog_twid->tview));
+	xc_chat_view_set_font (pevent_dialog_twid, prefs.hex_text_font);
 
 	hbox = gtk_hbutton_box_new ();
 	gtk_button_box_set_layout (GTK_BUTTON_BOX (hbox), GTK_BUTTONBOX_SPREAD);

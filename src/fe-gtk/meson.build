@@ -25,7 +25,8 @@ hexchat_gtk_sources = [
   'textgui.c',
   'urlgrab.c',
   'userlistgui.c',
-  'xtext.c'
+#  'xtext.c'
+  'xcchatview.c'
 ]
 
 gtk_dep = dependency('gtk+-2.0', version: '>= 2.24.0')

@@ -20,7 +20,8 @@
 #ifndef HEXCHAT_TEXTGUI_H
 #define HEXCHAT_TEXTGUI_H
 
-void PrintTextRaw (void *xtbuf, unsigned char *text, int indent, time_t stamp);
+//xyzzy easy
+void PrintTextRaw (XcChatView *xccv, unsigned char *text, int indent, time_t stamp);
 void pevent_dialog_show (void);
 
 #endif

@@ -1,5 +1,6 @@
 /* X-Chat
  * Copyright (C) 1998-2005 Peter Zelezny.
+ * Copyright (c) 2023-2024 somercet
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +23,8 @@
 #include <ctype.h>
 
 #include <gdk/gdkkeysyms.h>
+
+#include "xc_search_flags.h"
 
 #include "../common/hexchat.h"
 #include "../common/fe.h"
@@ -49,7 +52,8 @@
 #include "chanview.h"
 #include "pixmaps.h"
 #include "plugin-tray.h"
-#include "xtext.h"
+//#include "x text.h"
+#include "xcchatview.h"
 #include "sexy-spell-entry.h"
 #include "gtkutil.h"
 
@@ -828,9 +832,9 @@ mg_populate (session *sess)
 {
 	session_gui *gui = sess->gui;
 	restore_gui *res = sess->res;
-	int i, render = TRUE;
-	guint16 vis = gui->ul_hidden;
-	GtkAllocation allocation;
+	int i; //render = TRUE;
+	//guint16 vis = gui->ul_hidden;
+	//GtkAllocation allocation;
 
 	switch (sess->type)
 	{
@@ -874,13 +878,15 @@ mg_populate (session *sess)
 	if (gui->is_tab)
 		gtk_notebook_set_current_page (GTK_NOTEBOOK (gui->note_book), 0);
 
-	/* xtext size change? Then don't render, wait for the expose caused
-      by showing/hidding the userlist */
+//xyzzy easy eliminate
+	/* x text size change? Then don't render, wait for the expose caused
+      by showing/hidding the userlist
 	gtk_widget_get_allocation (gui->user_box, &allocation);
 	if (vis != gui->ul_hidden && allocation.width > 1)
 		render = FALSE;
-
-	gtk_xtext_buffer_show (GTK_XTEXT (gui->xtext), res->buffer, render);
+ */
+//wyzzy easy
+	//gtk_x text_buffer_show (GTK_XTEXT (gui->x text), res->buffer, render);
 
 	if (gui->is_tab)
 		gtk_widget_set_sensitive (gui->menu, TRUE);
@@ -1649,7 +1655,7 @@ mg_dnd_drop_file (session *sess, char *target, char *uri)
 			fname = g_filename_from_uri (p, NULL, NULL);
 			if (fname)
 			{
-				/* dcc_send() expects utf-8 */
+				// dcc_send() expects utf-8
 				p = g_filename_from_utf8 (fname, -1, 0, 0, 0);
 				if (p)
 				{
@@ -1668,6 +1674,8 @@ mg_dnd_drop_file (session *sess, char *target, char *uri)
 	g_free (data);
 
 }
+/*
+*/
 
 static void
 mg_dialog_dnd_drop (GtkWidget * widget, GdkDragContext * context, gint x,
@@ -1710,10 +1718,12 @@ mg_add_chan (session *sess)
 
 	chan_set_color (sess->res->tab, plain_list);
 
-	if (sess->res->buffer == NULL)
+	if (sess->res->buffer == NULL) // all new x texts go through this
 	{
-		sess->res->buffer = gtk_xtext_buffer_new (GTK_XTEXT (sess->gui->xtext));
-		gtk_xtext_set_time_stamp (sess->res->buffer, prefs.hex_stamp_text);
+//wyzzy easy we can just dupe Xccv into Ses->Res->Buf which will satisfy it.
+		//sess->res->buffer = gtk_x text_buffer_new (GTK_X TEXT (sess->gui->x text));
+		sess->res->buffer = sess->gui->xccv;
+		xc_chat_view_set_time_stamp (sess->res->buffer, prefs.hex_stamp_text);
 		sess->res->user_model = userlist_create_model (sess);
 	}
 }
@@ -1861,7 +1871,8 @@ mg_link_irctab (session *sess, int focus)
 	win = mg_changui_destroy (sess);
 	mg_changui_new (sess, sess->res, 1, focus);
 	/* the buffer is now attached to a different widget */
-	((xtext_buffer *)sess->res->buffer)->xtext = (GtkXText *)sess->gui->xtext;
+//xyzzy medium-hard the detach/reattach thing will be tough to get right
+	sess->res->buffer = sess->gui->xccv;
 	if (win)
 		gtk_widget_destroy (win);
 }
@@ -2200,8 +2211,10 @@ mg_create_topicbar (session *sess, GtkWidget *box)
 
 /* check if a word is clickable */
 
+//xyzzy easy disconnect, recon in new widget
+/*
 static int
-mg_word_check (GtkWidget * xtext, char *word)
+mg_word_check (XcChatView *xccv, char *word)
 {
 	session *sess = current_sess;
 	int ret;
@@ -2212,11 +2225,13 @@ mg_word_check (GtkWidget * xtext, char *word)
 
 	return ret;
 }
-
+*/
 /* mouse click inside text area */
 
+//xyzzy easy discon then reconn
+/*
 static void
-mg_word_clicked (GtkWidget *xtext, char *word, GdkEventButton *even)
+mg_word_clicked (XcChatView *xccv, char *word, GdkEventButton *even)
 {
 	session *sess = current_sess;
 	int word_type = 0, start, end;
@@ -2224,11 +2239,11 @@ mg_word_clicked (GtkWidget *xtext, char *word, GdkEventButton *even)
 
 	if (word)
 	{
-		word_type = mg_word_check (xtext, word);
+		word_type = mg_word_check (xccv, word);
 		url_last (&start, &end);
 	}
 
-	if (even->button == 1)			/* left button */
+	if (even->button == 1)			// left button
 	{
 		if (word == NULL)
 		{
@@ -2296,34 +2311,38 @@ mg_word_clicked (GtkWidget *xtext, char *word, GdkEventButton *even)
 		break;
 	}
 }
+*/
 
 void
-mg_update_xtext (GtkWidget *wid)
+mg_update_xtext (GObject *wid)
 {
-	GtkXText *xtext = GTK_XTEXT (wid);
+//wyzzy easy this is the external init func for prefs
+	XcChatView *xccv = XC_CHAT_VIEW (wid);
 
-	gtk_xtext_set_palette (xtext, colors);
-	gtk_xtext_set_max_lines (xtext, prefs.hex_text_max_lines);
-	gtk_xtext_set_background (xtext, channelwin_pix);
-	gtk_xtext_set_wordwrap (xtext, prefs.hex_text_wordwrap);
-	gtk_xtext_set_show_marker (xtext, prefs.hex_text_show_marker);
-	gtk_xtext_set_show_separator (xtext, prefs.hex_text_indent ? prefs.hex_text_show_sep : 0);
-	gtk_xtext_set_indent (xtext, prefs.hex_text_indent);
-	if (!gtk_xtext_set_font (xtext, prefs.hex_text_font))
+	xc_chat_view_set_palette (xccv, colors);
+	xc_chat_view_set_max_lines (xccv, prefs.hex_text_max_lines);
+	xc_chat_view_set_background (xccv, channelwin_pix);
+	xc_chat_view_set_wordwrap (xccv, prefs.hex_text_wordwrap);
+	xc_chat_view_set_show_marker (xccv, prefs.hex_text_show_marker);
+	xc_chat_view_set_show_separator (xccv, prefs.hex_text_indent ? prefs.hex_text_show_sep : 0);
+	xc_chat_view_set_indent (xccv, prefs.hex_text_indent);
+	if (!xc_chat_view_set_font (xccv, prefs.hex_text_font))
 	{
 		fe_message ("Failed to open any font. I'm out of here!", FE_MSG_WAIT | FE_MSG_ERROR);
 		exit (1);
 	}
 
-	gtk_xtext_refresh (xtext);
+	//gtk_x text_refresh (x text);
 }
 
 static void
 mg_create_textarea (session *sess, GtkWidget *box)
 {
-	GtkWidget *inbox, *vbox, *frame;
-	GtkXText *xtext;
+	GtkWidget *inbox, *vbox, *frame, *sw;
+	XcChatView *xccv;
 	session_gui *gui = sess->gui;
+/* xyzzy
+*/
 	static const GtkTargetEntry dnd_targets[] =
 	{
 		{"text/uri-list", 0, 1}
@@ -2343,21 +2362,27 @@ mg_create_textarea (session *sess, GtkWidget *box)
 	gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_IN);
 	gtk_container_add (GTK_CONTAINER (inbox), frame);
 
-	gui->xtext = gtk_xtext_new (colors, TRUE);
-	xtext = GTK_XTEXT (gui->xtext);
-	gtk_xtext_set_max_indent (xtext, prefs.hex_text_max_indent);
-	gtk_xtext_set_thin_separator (xtext, prefs.hex_text_thin_sep);
-	gtk_xtext_set_urlcheck_function (xtext, mg_word_check);
-	gtk_xtext_set_max_lines (xtext, prefs.hex_text_max_lines);
-	gtk_container_add (GTK_CONTAINER (frame), GTK_WIDGET (xtext));
+	xccv = xc_chat_view_new (); //(colors, TRUE);
+	gui->xccv = (GObject *) xccv;
+	xc_chat_view_set_max_indent (xccv, prefs.hex_text_max_indent);
+	xc_chat_view_set_thin_separator (xccv, prefs.hex_text_thin_sep);
+	//gtk_x text_set_urlcheck_function (x text, mg_word_check);
+	xc_chat_view_set_max_lines (xccv, prefs.hex_text_max_lines);
 
-	mg_update_xtext (GTK_WIDGET (xtext));
+	sw = gtk_scrolled_window_new (NULL, NULL);
+	gtk_container_add (GTK_CONTAINER (frame), sw);
+	gtk_container_add (GTK_CONTAINER (sw), GTK_WIDGET (xccv->tview));
 
-	g_signal_connect (G_OBJECT (xtext), "word_click",
-							G_CALLBACK (mg_word_clicked), NULL);
+	mg_update_xtext (gui->xccv);
 
-	gui->vscrollbar = gtk_vscrollbar_new (GTK_XTEXT (xtext)->adj);
-	gtk_box_pack_start (GTK_BOX (inbox), gui->vscrollbar, FALSE, TRUE, 0);
+//wyzzy easy here we discon word_click
+	//g_signal_connect (G_OBJECT (x text), "word_click",
+	//						G_CALLBACK (mg_word_clicked), NULL);
+
+//wyzzy easy turn vscroll into scrlldwin
+	//gui->vscrollbar = gtk_vscrollbar_new (GTK_XTEXT (x text)->adj);
+	//gtk_box_pack_start (GTK_BOX (inbox), gui->vscrollbar, FALSE, TRUE, 0);
+	gui->vscrollbar = gtk_scrolled_window_get_vscrollbar (GTK_SCROLLED_WINDOW (sw));
 
 	gtk_drag_dest_set (gui->vscrollbar, 5, dnd_dest_targets, 2,
 							 GDK_ACTION_MOVE | GDK_ACTION_COPY | GDK_ACTION_LINK);
@@ -2370,10 +2395,12 @@ mg_create_textarea (session *sess, GtkWidget *box)
 	g_signal_connect (G_OBJECT (gui->vscrollbar), "drag_end",
 							G_CALLBACK (mg_drag_end_cb), NULL);
 
-	gtk_drag_dest_set (gui->xtext, GTK_DEST_DEFAULT_ALL, dnd_targets, 1,
+	gtk_drag_dest_set (GTK_WIDGET (xccv->tview), GTK_DEST_DEFAULT_ALL, dnd_targets, 1,
 							 GDK_ACTION_MOVE | GDK_ACTION_COPY | GDK_ACTION_LINK);
-	g_signal_connect (G_OBJECT (gui->xtext), "drag_data_received",
+	g_signal_connect (G_OBJECT (gui->xccv), "drag_data_received",
 							G_CALLBACK (mg_dialog_dnd_drop), NULL);
+/* xyzzy
+*/
 }
 
 static GtkWidget *
@@ -2787,50 +2814,27 @@ mg_inputbox_rightclick (GtkEntry *entry, GtkWidget *menu)
 #define SEARCH_REFRESH		4
 
 static void
-search_handle_event(int search_type, session *sess)
+//xyzzy medium must be translated but search is ready. mostly.
+search_handle_event (int search_type, session *sess)
 {
-	textentry *last;
 	const gchar *text = NULL;
-	gtk_xtext_search_flags flags;
+	gint flags;
 	GError *err = NULL;
-	gboolean backwards = FALSE;
 
-	/* When just typing show most recent first */
-	if (search_type == SEARCH_PREVIOUS || search_type == SEARCH_CHANGE)
-		backwards = TRUE;
-
-	flags = ((prefs.hex_text_search_case_match == 1? case_match: 0) |
-				(backwards? backward: 0) |
-				(prefs.hex_text_search_highlight_all == 1? highlight: 0) |
-				(prefs.hex_text_search_follow == 1? follow: 0) |
-				(prefs.hex_text_search_regexp == 1? regexp: 0));
+	flags =
+		(prefs.hex_text_search_case_match == 1)    ? SF_CASE_MATCH : 0 |
+		(prefs.hex_text_search_highlight_all == 1) ? SF_HIGHLIGHT  : 0 |
+		(prefs.hex_text_search_regexp == 1)        ? SF_REGEXP     : 0 ;
 
 	if (search_type != SEARCH_REFRESH)
 		text = gtk_entry_get_text (GTK_ENTRY(sess->gui->shentry));
-	last = gtk_xtext_search (GTK_XTEXT (sess->gui->xtext), text, flags, &err);
+	xc_chat_view_run_search (XC_CHAT_VIEW (sess->gui->xccv), text, flags, &err);
 
 	if (err)
 	{
 		gtk_entry_set_icon_from_stock (GTK_ENTRY (sess->gui->shentry), GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_DIALOG_ERROR);
 		gtk_entry_set_icon_tooltip_text (GTK_ENTRY (sess->gui->shentry), GTK_ENTRY_ICON_SECONDARY, _(err->message));
 		g_error_free (err);
-	}
-	else if (!last)
-	{
-		if (text && text[0] == 0) /* empty string, no error */
-		{
-			gtk_entry_set_icon_from_stock (GTK_ENTRY (sess->gui->shentry), GTK_ENTRY_ICON_SECONDARY, NULL);
-		}
-		else
-		{
-			/* Either end of search or not found, try again to wrap if only end */
-			last = gtk_xtext_search (GTK_XTEXT (sess->gui->xtext), text, flags, &err);
-			if (!last) /* Not found error */
-			{
-				gtk_entry_set_icon_from_stock (GTK_ENTRY (sess->gui->shentry), GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_DIALOG_ERROR);
-				gtk_entry_set_icon_tooltip_text (GTK_ENTRY (sess->gui->shentry), GTK_ENTRY_ICON_SECONDARY, _("No results found."));
-			}
-		}
 	}
 	else
 	{
@@ -2850,16 +2854,23 @@ search_handle_refresh(GtkWidget *wid, session *sess)
 	search_handle_event(SEARCH_REFRESH, sess);
 }
 
-void
-mg_search_handle_previous(GtkWidget *wid, session *sess)
+static void
+mg_next_search (session *sess, gboolean direction)
 {
-	search_handle_event(SEARCH_PREVIOUS, sess);
+	xc_chat_view_next_search (XC_CHAT_VIEW (sess->gui->xccv), direction);
 }
 
 void
-mg_search_handle_next(GtkWidget *wid, session *sess)
+mg_search_handle_previous (GtkWidget *wid, session *sess)
 {
-	search_handle_event(SEARCH_NEXT, sess);
+//   search_handle_event(SEARCH_PREVIOUS, sess);
+	mg_next_search (sess, FALSE);
+}
+
+void
+mg_search_handle_next (GtkWidget *wid, session *sess)
+{
+	mg_next_search (sess, TRUE);
 }
 
 static void
@@ -2926,6 +2937,7 @@ mg_create_search(session *sess, GtkWidget *box)
 	gtk_entry_set_icon_activatable (GTK_ENTRY (entry), GTK_ENTRY_ICON_SECONDARY, FALSE);
 	gtk_entry_set_icon_tooltip_text (GTK_ENTRY (sess->gui->shentry), GTK_ENTRY_ICON_SECONDARY, _("Search hit end or not found."));
 
+//xyzzy easy change prev/next to direct func calls.
 	previous = gtk_button_new ();
 	gtk_button_set_image (GTK_BUTTON (previous), gtk_image_new_from_stock (GTK_STOCK_GO_BACK, GTK_ICON_SIZE_MENU));
 	gtk_button_set_relief(GTK_BUTTON(previous), GTK_RELIEF_NONE);
@@ -3076,7 +3088,8 @@ mg_tabwin_focus_cb (GtkWindow * win, GdkEventFocus *event, gpointer userdata)
 	current_sess = current_tab;
 	if (current_sess)
 	{
-		gtk_xtext_check_marker_visibility (GTK_XTEXT (current_sess->gui->xtext));
+//wyzzy easy
+		xc_chat_view_check_marker_visibility (XC_CHAT_VIEW (current_sess->gui->xccv));
 		plugin_emit_dummy_print (current_sess, "Focus Window");
 	}
 	unflash_window (GTK_WIDGET (win));
@@ -3089,7 +3102,8 @@ mg_topwin_focus_cb (GtkWindow * win, GdkEventFocus *event, session *sess)
 	current_sess = sess;
 	if (!sess->server->server_session)
 		sess->server->server_session = sess;
-	gtk_xtext_check_marker_visibility(GTK_XTEXT (current_sess->gui->xtext));
+//wyzzy easy
+	xc_chat_view_check_marker_visibility (XC_CHAT_VIEW (current_sess->gui->xccv));
 	unflash_window (GTK_WIDGET (win));
 	plugin_emit_dummy_print (sess, "Focus Window");
 	return FALSE;
@@ -3162,9 +3176,10 @@ mg_create_topwindow (session *sess)
 
 	if (sess->res->buffer == NULL)
 	{
-		sess->res->buffer = gtk_xtext_buffer_new (GTK_XTEXT (sess->gui->xtext));
-		gtk_xtext_buffer_show (GTK_XTEXT (sess->gui->xtext), sess->res->buffer, TRUE);
-		gtk_xtext_set_time_stamp (sess->res->buffer, prefs.hex_stamp_text);
+//wyzzy easy same as the other init
+		sess->res->buffer = sess->gui->xccv;
+		//gtk_xtext_buffer_show (GTK_XTEXT (sess->gui->xtext), sess->res->buffer, TRUE);
+		xc_chat_view_set_time_stamp (XC_CHAT_VIEW (sess->res->buffer), prefs.hex_stamp_text);
 		sess->res->user_model = userlist_create_model (sess);
 	}
 
@@ -3335,8 +3350,9 @@ mg_apply_setup (void)
 	while (list)
 	{
 		sess = list->data;
-		gtk_xtext_set_time_stamp (sess->res->buffer, prefs.hex_stamp_text);
-		((xtext_buffer *)sess->res->buffer)->needs_recalc = TRUE;
+//wyzzy easy
+		xc_chat_view_set_time_stamp (XC_CHAT_VIEW (sess->res->buffer), prefs.hex_stamp_text);
+		//((xtext_buffer *)sess->res->buffer)->needs_recalc = TRUE;
 		if (!sess->gui->is_tab || !done_main)
 			mg_place_userlist_and_chanview (sess->gui);
 		if (sess->gui->is_tab)
@@ -3672,7 +3688,10 @@ fe_server_callback (server *serv)
 void
 fe_session_callback (session *sess)
 {
-	gtk_xtext_buffer_free (sess->res->buffer);
+//wyzzy easy
+	XcChatView *xccv = XC_CHAT_VIEW (sess->res->buffer);
+	gtk_widget_destroy (GTK_WIDGET (xccv->tview));
+	g_object_unref (sess->res->buffer);
 	g_object_unref (G_OBJECT (sess->res->user_model));
 
 	if (sess->res->banlist && sess->res->banlist->window)

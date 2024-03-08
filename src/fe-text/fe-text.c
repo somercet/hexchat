@@ -1,5 +1,6 @@
 /* X-Chat
  * Copyright (C) 1998 Peter Zelezny.
+ * Copyright (c) 2023-2024 somercet
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +36,7 @@
 #include <sys/types.h>
 #include <ctype.h>
 #include <glib-object.h>
+
 #include "../common/hexchat.h"
 #include "../common/hexchatc.h"
 #include "../common/cfgfiles.h"
@@ -795,7 +797,7 @@ fe_userlist_hide (session * sess)
 {
 }
 void
-fe_lastlog (session *sess, session *lastlog_sess, char *sstr, gtk_xtext_search_flags flags)
+fe_lastlog (session *sess, session *lastlog_sess, char *sstr, int search_flags)
 {
 }
 void

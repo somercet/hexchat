@@ -346,13 +346,15 @@ struct hexchatprefs
 #define LACT_CHAN_DATA	4		/* channel with other data */
 
 /* Moved from fe-gtk for use in outbound.c as well -- */
+//wyzzy
+/*
 typedef enum gtk_xtext_search_flags_e {
 	case_match = 1,
 	backward = 2,
 	highlight = 4,
 	follow = 8,
 	regexp = 16
-} gtk_xtext_search_flags;
+} xc_search_flags; */
 
 typedef enum {
 	TAB_STATE_NONE = 0,
@@ -424,7 +426,7 @@ typedef struct session
 	int done_away_check:1;	/* done checking for away status changes */
 	tab_state_flags tab_state;
 	tab_state_flags last_tab_state; /* before event is handled */
-	gtk_xtext_search_flags lastlog_flags;
+	int lastlog_flags;
 	void (*scrollback_replay_marklast) (struct session *sess);
 } session;
 

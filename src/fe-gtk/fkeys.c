@@ -1,5 +1,6 @@
 /* X-Chat
  * Copyright (C) 1998 Peter Zelezny.
+ * Copyright (c) 2023-2024 somercet
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +47,8 @@
 #include <gdk/gdkkeysyms.h>
 #include "gtkutil.h"
 #include "menu.h"
-#include "xtext.h"
+//#include "x text.h"
+#include "xcchatview.h"
 #include "palette.h"
 #include "maingui.h"
 #include "textgui.h"
@@ -387,13 +389,14 @@ get_store (void)
 	return gtk_tree_view_get_model (g_object_get_data (G_OBJECT (key_dialog), "view"));
 }
 
+//wyzzy easy
 static void
-key_dialog_print_text (GtkXText *xtext, char *text)
+key_dialog_print_text (XcChatView *xccv, char *text)
 {
 	unsigned int old = prefs.hex_stamp_text;
 	prefs.hex_stamp_text = 0;	/* temporarily disable stamps */
-	gtk_xtext_clear (GTK_XTEXT (xtext)->buffer, 0);
-	PrintTextRaw (GTK_XTEXT (xtext)->buffer, text, 0, 0);
+	xc_chat_view_clear (xccv, 0);
+	PrintTextRaw (xccv, text, 0, 0);
 	prefs.hex_stamp_text = old;
 }
 
@@ -422,16 +425,17 @@ key_dialog_set_key (GtkCellRendererAccel *accel, gchar *pathstr, guint accel_key
 	g_free (accel_name);
 }
 
+//wyzzy easy
 static void
 key_dialog_combo_changed (GtkCellRendererCombo *combo, gchar *pathstr,
 						GtkTreeIter *new_iter, gpointer data)
 {
 	GtkTreeModel *model;
-	GtkXText *xtext;
+	XcChatView *xccv;
 	gchar *actiontext = NULL;
 	gint action;
 
-	xtext = GTK_XTEXT (g_object_get_data (G_OBJECT (key_dialog), "xtext"));
+	xccv = XC_CHAT_VIEW (g_object_get_data (G_OBJECT (key_dialog), "xccv"));
 	model = GTK_TREE_MODEL (data);
 
 	gtk_tree_model_get (model, new_iter, 0, &actiontext, -1);
@@ -453,7 +457,7 @@ key_dialog_combo_changed (GtkCellRendererCombo *combo, gchar *pathstr,
 #endif
 
 		action = key_get_action_from_string (actiontext);
-		key_dialog_print_text (xtext, key_actions[action].help);
+		key_dialog_print_text (xccv, key_actions[action].help);
 
 		g_free (actiontext);
 	}
@@ -515,29 +519,30 @@ key_dialog_keypress (GtkWidget *wid, GdkEventKey *evt, gpointer userdata)
 	return handled;
 }
 
+//wyzzy easy
 static void
 key_dialog_selection_changed (GtkTreeSelection *sel, gpointer userdata)
 {
 	GtkTreeModel *model;
 	GtkTreeIter iter;
-	GtkXText *xtext;
+	XcChatView *xccv;
 	char *actiontext;
 	int action;
 
 	if (!gtk_tree_selection_get_selected (sel, &model, &iter) || model == NULL)
 		return;
 
-	xtext = GTK_XTEXT (g_object_get_data (G_OBJECT (key_dialog), "xtext"));
+	xccv = XC_CHAT_VIEW (g_object_get_data (G_OBJECT (key_dialog), "xccv"));
 	gtk_tree_model_get (model, &iter, ACTION_COLUMN, &actiontext, -1);
 
 	if (actiontext)
 	{
 		action = key_get_action_from_string (actiontext);
-		key_dialog_print_text (xtext, key_actions[action].help);
+		key_dialog_print_text (xccv, key_actions[action].help);
 		g_free (actiontext);
 	}
 	else
-		key_dialog_print_text (xtext, _("Select a row to get help information on its Action."));
+		key_dialog_print_text (xccv, _("Select a row to get help information on its Action."));
 }
 
 static void
@@ -795,11 +800,12 @@ key_dialog_load (GtkListStore *store)
 	}
 }
 
+//wyzzy easy
 void
 key_dialog_show ()
 {
-	GtkWidget *vbox, *box;
-	GtkWidget *view, *xtext;
+	GtkWidget *vbox, *box, *view;
+	XcChatView *xccv;
 	GtkListStore *store;
 	char buf[128];
 
@@ -814,12 +820,12 @@ key_dialog_show ()
 									NULL, 600, 360, &vbox, 0);
 
 	view = key_dialog_treeview_new (vbox);
-	xtext = gtk_xtext_new (colors, 0);
-	gtk_box_pack_start (GTK_BOX (vbox), xtext, FALSE, TRUE, 2);
-	gtk_xtext_set_font (GTK_XTEXT (xtext), prefs.hex_text_font);
+	xccv = xc_chat_view_new ();
+	gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET (xccv->tview), FALSE, TRUE, 2);
+	xc_chat_view_set_font (xccv, prefs.hex_text_font);
 
 	g_object_set_data (G_OBJECT (key_dialog), "view", view);
-	g_object_set_data (G_OBJECT (key_dialog), "xtext", xtext);
+	g_object_set_data (G_OBJECT (key_dialog), "xccv", xccv);
 
 	box = gtk_hbutton_box_new ();
 	gtk_button_box_set_layout (GTK_BUTTON_BOX (box), GTK_BUTTONBOX_SPREAD);

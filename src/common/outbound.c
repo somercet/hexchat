@@ -1,5 +1,6 @@
 /* X-Chat
  * Copyright (C) 1998 Peter Zelezny.
+ * Copyright (c) 2023-2024 somercet
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +38,8 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+#include "../fe-gtk/xc_search_flags.h"
 
 #include "hexchat.h"
 #include "plugin.h"
@@ -2512,7 +2515,7 @@ cmd_lagcheck (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 }
 
 static void
-lastlog (session *sess, char *search, gtk_xtext_search_flags flags)
+lastlog (session *sess, char *search, int search_flags)
 {
 	session *lastlog_sess;
 
@@ -2524,17 +2527,16 @@ lastlog (session *sess, char *search, gtk_xtext_search_flags flags)
 		lastlog_sess = new_ircwindow (sess->server, "(lastlog)", SESS_DIALOG, 0);
 
 	lastlog_sess->lastlog_sess = sess;
-	lastlog_sess->lastlog_flags = flags;
+	lastlog_sess->lastlog_flags = search_flags;
 
 	fe_text_clear (lastlog_sess, 0);
-	fe_lastlog (sess, lastlog_sess, search, flags);
+	fe_lastlog (sess, lastlog_sess, search, search_flags);
 }
 
 static int
 cmd_lastlog (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 {
-	int j = 2;
-	gtk_xtext_search_flags flags = 0;
+	int j = 2, flags = 0;
 	gboolean doublehyphen = FALSE;
 
 	while (word_eol[j] != NULL && word_eol [j][0] == '-' && !doublehyphen)
@@ -2542,13 +2544,13 @@ cmd_lastlog (struct session *sess, char *tbuf, char *word[], char *word_eol[])
 		switch (word_eol [j][1])
 		{
 			case 'r':
-				flags |= regexp;
+				flags |= SF_REGEXP;
 				break;
 			case 'm':
-				flags |= case_match;
+				flags |= SF_CASE_MATCH;
 				break;
 			case 'h':
-				flags |= highlight;
+				flags |= SF_HIGHLIGHT;
 				break;
 			case '-':
 				doublehyphen = TRUE;

@@ -1,5 +1,6 @@
 /* X-Chat
  * Copyright (C) 1998 Peter Zelezny.
+ * Copyright (c) 2023-2024 somercet
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +30,8 @@
 #include <unistd.h>
 #endif
 
+#include "xc_search_flags.h"
+
 #include "../common/hexchat.h"
 #include "../common/fe.h"
 #include "../common/util.h"
@@ -43,7 +46,8 @@
 #include "pixmaps.h"
 #include "chanlist.h"
 #include "joind.h"
-#include "xtext.h"
+//#include "x text.h"
+#include "xcchatview.h"
 #include "palette.h"
 #include "menu.h"
 #include "notifygui.h"
@@ -453,7 +457,9 @@ fe_new_window (session *sess, int focus)
 	if (!sess_list->next)
 		g_idle_add (fe_idle, NULL);
 
-	sess->scrollback_replay_marklast = gtk_xtext_set_marker_last;
+//wyzzy unknown func with no (), to a variable that does not exist??
+//	sess->scrollback_replay_marklast = gtk_xtext_set_marker_last;
+	xc_chat_view_set_marker_last (XC_CHAT_VIEW (sess->res->buffer));
 }
 
 void
@@ -611,7 +617,8 @@ fe_notify_update (char *name)
 void
 fe_text_clear (struct session *sess, int lines)
 {
-	gtk_xtext_clear (sess->res->buffer, lines);
+//wyzzy easy
+	xc_chat_view_clear (XC_CHAT_VIEW (sess->res->buffer), lines);
 }
 
 void
@@ -658,7 +665,8 @@ void
 fe_print_text (struct session *sess, char *text, time_t stamp,
 			   gboolean no_activity)
 {
-	PrintTextRaw (sess->res->buffer, (unsigned char *)text, prefs.hex_text_indent, stamp);
+//wyzzy easy
+	PrintTextRaw (XC_CHAT_VIEW (sess->res->buffer), (unsigned char *)text, prefs.hex_text_indent, stamp);
 
 	if (no_activity || !sess->gui->is_tab)
 		return;
@@ -702,15 +710,20 @@ fe_beep (session *sess)
 #endif
 }
 
+//wyzzy easy just forward args to xccv
 void
-fe_lastlog (session *sess, session *lastlog_sess, char *sstr, gtk_xtext_search_flags flags)
+fe_lastlog (session *sess, session *lastlog_sess, char *sstr, gint search_flags)
 {
+	xc_chat_view_lastlog (XC_CHAT_VIEW (sess->res->buffer),
+								 XC_CHAT_VIEW (lastlog_sess->res->buffer), sstr, search_flags);
+
+/*
 	GError *err = NULL;
-	xtext_buffer *buf, *lbuf;
+	x text_buffer *buf, *lbuf;
 
 	buf = sess->res->buffer;
 
-	if (gtk_xtext_is_empty (buf))
+	if (gtk_x text_is_empty (buf))
 	{
 		PrintText (lastlog_sess, _("Search buffer is empty.\n"));
 		return;
@@ -743,7 +756,8 @@ fe_lastlog (session *sess, session *lastlog_sess, char *sstr, gtk_xtext_search_f
 	}
 	lbuf->search_flags = flags;
 	lbuf->search_text = g_strdup (sstr);
-	gtk_xtext_lastlog (lbuf, buf);
+	gtk_x text_lastlog (lbuf, buf);
+	*/
 }
 
 void

@@ -48,7 +48,8 @@
 #include "../common/cfgfiles.h"
 #include "../common/hexchatc.h"
 #include "palette.h"
-#include "xtext.h"
+//#include "xtext.h"
+#include "xcchatview.h"
 
 /*
  * Bunch of poop to make enchant into a runtime dependency rather than a

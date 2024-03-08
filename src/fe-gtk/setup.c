@@ -1,5 +1,6 @@
 /* X-Chat
  * Copyright (C) 2004-2007 Peter Zelezny.
+ * Copyright (c) 2023-2024 somercet
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -871,7 +872,7 @@ setup_apply_trans (int *tag)
 	gtk_window_set_opacity (GTK_WINDOW (current_sess->gui->window),
 							(prefs.hex_gui_transparency / 255.));
 
-	/* mg_update_xtext (current_sess->gui->xtext); */
+	mg_update_xtext (current_sess->gui->xccv);
 	*tag = 0;
 	return 0;
 }
@@ -2047,7 +2048,7 @@ setup_apply_entry_style (GtkWidget *entry)
 static void
 setup_apply_to_sess (session_gui *gui)
 {
-	mg_update_xtext (gui->xtext);
+	mg_update_xtext (gui->xccv);
 
 	if (prefs.hex_gui_ulist_style)
 		gtk_widget_set_style (gui->user_tree, input_style);

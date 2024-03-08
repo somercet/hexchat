@@ -54,7 +54,7 @@ extern GtkosxApplication *osx_app;
 struct server_gui
 {
 	GtkWidget *rawlog_window;
-	GtkWidget *rawlog_textlist;
+	GObject *rawlog_textlist;
 
 	/* join dialog */
 	GtkWidget *joind_win;
@@ -108,7 +108,8 @@ typedef struct restore_gui
 
 	/* information stored when this tab isn't front-most */
 	GtkListStore *user_model;	/* for filling the GtkTreeView */
-	void *buffer;		/* xtext_Buffer */
+//wyzzy we'll just dupe Xccv if we can't get rid of it
+	void *buffer;		/* x text_Buffer */
 	char *input_text;	/* input text buffer (while not-front tab) */
 	char *topic_text;	/* topic GtkEntry buffer */
 	char *key_text;
@@ -126,8 +127,8 @@ typedef struct restore_gui
 
 typedef struct session_gui
 {
+	GObject	*xccv;
 	GtkWidget
-		*xtext,
 		*vscrollbar,
 		*window,	/* toplevel */
 		*topic_entry,

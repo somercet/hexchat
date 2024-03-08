@@ -43,7 +43,8 @@
 #include "../common/notify.h"
 #include "../common/util.h"
 #include "../common/text.h"
-#include "xtext.h"
+//#include "x text.h"
+#include "xcchatview.h"
 #include "ascii.h"
 #include "banlist.h"
 #include "chanlist.h"
@@ -1298,7 +1299,8 @@ menu_search_prev (GtkWidget *wid)
 static void
 menu_resetmarker (GtkWidget * wid, gpointer none)
 {
-	gtk_xtext_reset_marker_pos (GTK_XTEXT (current_sess->gui->xtext));
+//wyzzy easy
+	xc_chat_view_reset_marker_pos (XC_CHAT_VIEW (current_sess->gui->xccv));
 }
 
 static void
@@ -1311,7 +1313,8 @@ menu_movetomarker (GtkWidget *wid, gpointer none)
 		PrintText (current_sess, _("Marker line disabled."));
 	else
 	{
-		reason = gtk_xtext_moveto_marker_pos (GTK_XTEXT (current_sess->gui->xtext));
+//wyzzy easy
+		reason = xc_chat_view_moveto_marker_pos (XC_CHAT_VIEW (current_sess->gui->xccv));
 		switch (reason) {
 		case MARKER_WAS_NEVER_SET:
 			str = _("Marker line never set."); break;
@@ -1334,7 +1337,8 @@ menu_movetomarker (GtkWidget *wid, gpointer none)
 static void
 menu_copy_selection (GtkWidget * wid, gpointer none)
 {
-	gtk_xtext_copy_selection (GTK_XTEXT (current_sess->gui->xtext));
+//wyzzy easy
+	xc_chat_view_copy_selection (XC_CHAT_VIEW (current_sess->gui->xccv));
 }
 
 static void
@@ -1354,7 +1358,8 @@ savebuffer_req_done (session *sess, char *file)
 	fh = g_open (file, O_TRUNC | O_WRONLY | O_CREAT, 0600);
 	if (fh != -1)
 	{
-		gtk_xtext_save (GTK_XTEXT (sess->gui->xtext), fh);
+//wyzzy easy
+		xc_chat_view_save (XC_CHAT_VIEW (sess->gui->xccv), fh);
 		close (fh);
 	}
 }

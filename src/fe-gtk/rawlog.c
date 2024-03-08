@@ -1,5 +1,6 @@
 /* X-Chat
  * Copyright (C) 1998 Peter Zelezny.
+ * Copyright (c) 2023-2024 somercet
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,9 +40,11 @@
 #include "palette.h"
 #include "maingui.h"
 #include "rawlog.h"
-#include "xtext.h"
+//#include "x text.h"
+#include "xcchatview.h"
 #include "fkeys.h"
 
+//xyzzy medium how to close
 static void
 close_rawlog (GtkWidget *wid, server *serv)
 {
@@ -61,7 +64,8 @@ rawlog_save (server *serv, char *file)
 										 0600, XOF_DOMODE | XOF_FULLPATH);
 		if (fh != -1)
 		{
-			gtk_xtext_save (GTK_XTEXT (serv->gui->rawlog_textlist), fh);
+//wyzzy easy
+			xc_chat_view_save (XC_CHAT_VIEW (serv->gui->rawlog_textlist), fh);
 			close (fh);
 		}
 	}
@@ -70,7 +74,8 @@ rawlog_save (server *serv, char *file)
 static int
 rawlog_clearbutton (GtkWidget * wid, server *serv)
 {
-	gtk_xtext_clear (GTK_XTEXT (serv->gui->rawlog_textlist)->buffer, 0);
+//wyzzy easy
+	xc_chat_view_clear (XC_CHAT_VIEW (serv->gui->rawlog_textlist), 0);
 	return FALSE;
 }
 
@@ -92,7 +97,8 @@ rawlog_key_cb (GtkWidget * wid, GdkEventKey * key, gpointer userdata)
 		key->state & STATE_SHIFT &&
 		key->state & STATE_CTRL)
 	{
-		gtk_xtext_copy_selection (userdata);
+//wyzzy easy
+		xc_chat_view_copy_selection (XC_CHAT_VIEW (userdata));
 	}
 	return FALSE;
 }
@@ -120,10 +126,11 @@ open_rawlog (struct server *serv)
 	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolledwindow), GTK_SHADOW_IN);
 	gtk_container_add (GTK_CONTAINER (vbox), scrolledwindow);
 
-	serv->gui->rawlog_textlist = gtk_xtext_new (colors, 0);
-	gtk_container_add (GTK_CONTAINER (scrolledwindow), serv->gui->rawlog_textlist);
-	gtk_xtext_set_font (GTK_XTEXT (serv->gui->rawlog_textlist), prefs.hex_text_font);
-	GTK_XTEXT (serv->gui->rawlog_textlist)->ignore_hidden = 1;
+//wyzzy easy
+	serv->gui->rawlog_textlist = (GObject *) xc_chat_view_new ();
+	gtk_container_add (GTK_CONTAINER (scrolledwindow), GTK_WIDGET ( ((XcChatView *) serv->gui->rawlog_textlist)->tview));
+	xc_chat_view_set_font (XC_CHAT_VIEW (serv->gui->rawlog_textlist), prefs.hex_text_font);
+	//GTK_XTEXT (serv->gui->rawlog_textlist)->ignore_hidden = 1;
 
 	bbox = gtk_hbutton_box_new ();
 	gtk_button_box_set_layout (GTK_BUTTON_BOX (bbox), GTK_BUTTONBOX_SPREAD);
@@ -163,7 +170,8 @@ fe_add_rawlog (server *serv, char *text, int len, int outbound)
 		else
 			new_text = g_strconcat ("\0033>>\017 ", split_text[i], NULL);
 
-		gtk_xtext_append (GTK_XTEXT (serv->gui->rawlog_textlist)->buffer, new_text, strlen (new_text), 0);
+//wyzzy easy
+		xc_chat_view_append (XC_CHAT_VIEW (serv->gui->rawlog_textlist), new_text, strlen (new_text), 0);
 
 		g_free (new_text);
 	}
