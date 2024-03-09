@@ -193,3 +193,6 @@ void fe_open_chan_list (server *serv, char *filter, int do_refresh);
 const char *fe_get_default_font (void);
 
 #endif
+
+gboolean fe_scrollback_is_selfloading (session *sess);
+void fe_scrollback_load (session *sess, gchar *filename);

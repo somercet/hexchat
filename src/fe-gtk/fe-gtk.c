@@ -1254,3 +1254,17 @@ fe_get_default_font (void)
 #endif
 		return NULL;
 }
+
+gboolean
+fe_scrollback_is_selfloading (session *sess)
+{
+	return TRUE;
+}
+
+void
+fe_scrollback_load (session *sess, gchar *filename)
+{
+	XcChatView *xccv = sess->res->buffer;
+
+	xc_chat_view_set_scrollback_file (xccv, filename);
+}

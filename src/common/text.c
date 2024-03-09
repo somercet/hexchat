@@ -71,7 +71,7 @@ static void mkdir_p (char *filename);
 static char *log_create_filename (char *channame);
 
 static char *
-scrollback_get_filename (session *sess)
+scrollback_get_filename (session *sess, gboolean uselogs)
 {
 	char *net, *chan, *buf, *ret = NULL;
 
@@ -86,7 +86,12 @@ scrollback_get_filename (session *sess)
 
 	chan = log_create_filename (sess->channel);
 	if (chan[0])
-		buf = g_strdup_printf ("%s" G_DIR_SEPARATOR_S "scrollback" G_DIR_SEPARATOR_S "%s" G_DIR_SEPARATOR_S "%s.txt", get_xdir (), net, chan);
+	{
+		if (uselogs)
+			buf = g_strdup_printf ("%s" G_DIR_SEPARATOR_S "logs" G_DIR_SEPARATOR_S "%s" G_DIR_SEPARATOR_S "%s.log", get_xdir (), net, chan);
+		else
+			buf = g_strdup_printf ("%s" G_DIR_SEPARATOR_S "scrollback" G_DIR_SEPARATOR_S "%s" G_DIR_SEPARATOR_S "%s.txt", get_xdir (), net, chan);
+	}
 	else
 		buf = NULL;
 	g_free (chan);
@@ -177,7 +182,7 @@ scrollback_save (session *sess, char *text, time_t stamp)
 
 	if (!sess->scrollfile)
 	{
-		if ((buf = scrollback_get_filename (sess)) == NULL)
+		if ((buf = scrollback_get_filename (sess, FALSE)) == NULL)
 			return;
 
 		sess->scrollfile = g_file_new_for_path (buf);
@@ -239,11 +244,21 @@ scrollback_load (session *sess)
 
 	if (!sess->scrollfile)
 	{
-		if ((buf = scrollback_get_filename (sess)) == NULL)
-			return;
+		gboolean sl = fe_scrollback_is_selfloading (sess);
 
-		sess->scrollfile = g_file_new_for_path (buf);
-		g_free (buf);
+		if ((buf = scrollback_get_filename (sess, sl)) == NULL)
+			return;
+		if (sl)
+		{
+			fe_scrollback_load (sess, buf);
+			g_free (buf);
+			return;
+		}
+		else
+		{
+			sess->scrollfile = g_file_new_for_path (buf);
+			g_free (buf);
+		}
 	}
 
 	stream = G_INPUT_STREAM(g_file_read (sess->scrollfile, NULL, NULL));

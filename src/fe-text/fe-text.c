@@ -920,3 +920,13 @@ fe_get_default_font (void)
 {
 	return NULL;
 }
+gboolean
+fe_scrollback_is_selfloading (session *sess)
+{
+	return 0;
+}
+void
+fe_scrollback_load (session *sess, gchar *filename)
+{
+	return;
+}
