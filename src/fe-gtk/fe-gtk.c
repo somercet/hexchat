@@ -430,6 +430,12 @@ fe_idle (gpointer data)
 	return 0;
 }
 
+static void
+fe_forwarder_replay_marklast (session *sess) // this used to send sess to x text, but that requires header pollution
+{
+	xc_chat_view_set_marker_last (sess->res->buffer);
+}
+
 void
 fe_new_window (session *sess, int focus)
 {
@@ -457,9 +463,8 @@ fe_new_window (session *sess, int focus)
 	if (!sess_list->next)
 		g_idle_add (fe_idle, NULL);
 
-//wyzzy unknown func with no (), to a variable that does not exist??
-//	sess->scrollback_replay_marklast = gtk_xtext_set_marker_last;
-	xc_chat_view_set_marker_last (XC_CHAT_VIEW (sess->res->buffer));
+//wyzzy
+	sess->scrollback_replay_marklast = fe_forwarder_replay_marklast;
 }
 
 void

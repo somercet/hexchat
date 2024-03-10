@@ -1,55 +1,63 @@
-.TH HEXCHAT "1" "April 2013" "HexChat @VERSION@" "User Commands"
-.SH NAME
-HexChat \- IRC Client
-.SH DESCRIPTION
-.SS "Usage:"
-.IP
-hexchat [OPTION...] URL
-.SS "Help Options:"
-.TP
-\fB\-h\fR, \fB\-\-help\fR
-Show help options
-.TP
-\fB\-\-help\-all\fR
-Show all help options
-.TP
-\fB\-\-help\-gtk\fR
-Show GTK+ Options
-.SS "Application Options:"
-.TP
-\fB\-a\fR, \fB\-\-no\-auto\fR
-Don't auto connect to servers
-.TP
-\fB\-d\fR, \fB\-\-cfgdir\fR=\fIPATH\fR
+.Dd April 1, 2013
+.Dt HEXCHAT 1
+.Os
+.Sh NAME
+.Nm hexchat
+.Nd a GTK+2 Internet Relay Chat client
+.Sh SYNOPSIS
+.Nm
+.Op Fl acden
+.Op Fl \-display Ns = Ns Ar display
+.Op Fl \-minimize Ns = Ns Ar level
+.Op Ar URL
+.Sh DESCRIPTION
+HexChat is a UTF-8 compatible Internet Relay Chat (IRC) client with a graphical
+user interface.
+.Pp
+The user documentation is
+.Lk https://hexchat.readthedocs.io/ here .
+.Sh OPTIONS
+.Ss Run options
+.Bl -tag -width Ds
+.It Fl a , \-no-auto
+Disable auto connect to servers
+.It Fl c , \-command Ns = Ns Ar command
+Execute
+.Ar command
+.It Fl d , \-cfgdir Ns = Ns Ar path
 Use a different config directory
-.TP
-\fB\-n\fR, \fB\-\-no\-plugins\fR
-Don't auto load any plugins
-.TP
-\fB\-p\fR, \fB\-\-plugindir\fR
-Show plugin auto\-load directory
-.TP
-\fB\-u\fR, \fB\-\-configdir\fR
-Show user config directory
-.TP
-\fB\-\-url\fR=\fIURL\fR
+.It Fl \-display Ns = Ns Ar display
+X11 display to use
+.It Fl e , \-existing
+Open URL, or execute command, in a running HexChat
+.It Fl \-minimize Ns = Ns Ar num
+Set initial minimization: 0 normal, 1 iconified, 2 systray
+.It Fl n , \-no-plugins
+Disable auto load of plugins
+.It Fl \-url Ns = Ns Ar url
 Open an irc://server:port/channel?key URL
-.TP
-\fB\-c\fR, \fB\-\-command\fR=\fICOMMAND\fR
-Execute command:
-.TP
-\fB\-e\fR, \fB\-\-existing\fR
-Open URL or execute command in an existing HexChat
-.TP
-\fB\-\-minimize\fR=\fIlevel\fR
-Begin minimized. Level 0=Normal 1=Iconified 2=Tray
-.TP
-\fB\-v\fR, \fB\-\-version\fR
+.El
+.Ss Show-and-exit options
+.Bl -tag -width Ds
+.It Fl p , \-plugindir
+Show plugin auto-load directory
+.It Fl u , \-configdir
+Show user config directory
+.It Fl v , \-version
 Show version information
-.TP
-\fB\-\-display\fR=\fIDISPLAY\fR
-X display to use
-
-.SH AUTHOR
-This manual page was written by Davide Puricelli <evo@debian.org> for the Debian GNU/Linux system (but
-may be used by others).
+.It Fl h , \-help
+Show help options
+.It Fl \-help-gtk
+Show GTK+ options
+.It Fl \-help-all
+Show all help options
+.El
+.Sh HISTORY
+HexChat is based on the older XChat client.
+.Sh AUTHORS
+.An Davide Puricelli Aq Mt evo@debian.org
+wrote the original version of this man page.
+.An somercet Aq Mt somercet@gmail.com
+turned it into
+.Xr mdoc 7
+and re-organized it.

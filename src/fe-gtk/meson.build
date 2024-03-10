@@ -21,7 +21,7 @@ hexchat_gtk_sources = [
   'rawlog.c',
   'servlistgui.c',
   'setup.c',
-  'sexy-spell-entry.c',
+#  's exy-spell-entry.c',
   'textgui.c',
   'urlgrab.c',
   'userlistgui.c',
@@ -32,7 +32,7 @@ hexchat_gtk_sources = [
 gtk_dep = dependency('gtk+-2.0', version: '>= 2.24.0')
 hexchat_gtk_deps = [
   hexchat_common_dep,
-  libgmodule_dep, # used by libsexy
+  libgmodule_dep, # used by libs exy
   gtk_dep
 ]
 
@@ -57,14 +57,14 @@ else
   hexchat_gtk_sources += 'notifications/notification-freedesktop.c'
 endif
 
-iso_codes = dependency('iso-codes', required: false)
-if iso_codes.found()
-  hexchat_gtk_sources += 'sexy-iso-codes.c'
-  iso_codes_prefix = iso_codes.get_pkgconfig_variable('prefix')
-  hexchat_gtk_cflags += '-DISO_CODES_PREFIX="@0@"'.format(iso_codes_prefix)
-  hexchat_gtk_cflags += '-DISO_CODES_LOCALEDIR="@0@"'.format(
-                        join_paths(iso_codes_prefix, 'share/locale'))
-endif
+iso_codes = dependency('iso-codes', required: true)
+# if iso_codes.found()
+#   hexchat_gtk_sources += 'sexy-iso-codes.c'
+#   iso_codes_prefix = iso_codes.get_pkgconfig_variable('prefix')
+#   hexchat_gtk_cflags += '-DISO_CODES_PREFIX="@0@"'.format(iso_codes_prefix)
+#   hexchat_gtk_cflags += '-DISO_CODES_LOCALEDIR="@0@"'.format(
+#                         join_paths(iso_codes_prefix, 'share/locale'))
+# endif
 
 if get_option('plugin')
   hexchat_gtk_sources += 'plugingui.c'

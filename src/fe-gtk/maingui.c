@@ -54,7 +54,7 @@
 #include "plugin-tray.h"
 //#include "x text.h"
 #include "xcchatview.h"
-#include "sexy-spell-entry.h"
+//#include "s exy-spell-entry.h"
 #include "gtkutil.h"
 
 #ifdef G_OS_WIN32
@@ -348,19 +348,21 @@ mg_inputbox_cb (GtkWidget *igad, session_gui *gui)
 	g_free (cmd);
 }
 
+/*
 static gboolean
-mg_spellcheck_cb (SexySpellEntry *entry, gchar *word, gpointer data)
+mg_spellcheck_cb (S exySpellEntry *entry, gchar *word, gpointer data)
 {
-	/* This can cause freezes on long words, nicks arn't very long anyway. */
+	// This can cause freezes on long words, nicks arn't very long anyway.
 	if (strlen (word) > 20)
 		return TRUE;
 
-	/* Ignore anything we think is a valid url */
+	// Ignore anything we think is a valid url
 	if (url_check_word (word) != 0)
 		return FALSE;
 
 	return TRUE;
 }
+*/
 
 #if 0
 static gboolean
@@ -2190,9 +2192,10 @@ mg_create_topicbar (session *sess, GtkWidget *box)
 	if (!gui->is_tab)
 		sess->res->tab = NULL;
 
-	gui->topic_entry = topic = sexy_spell_entry_new ();
+	//gui->topic_entry = topic = s exy_spell_entry_new ();
+	gui->topic_entry = topic = gtk_entry_new ();
 	gtk_widget_set_name (topic, "hexchat-inputbox");
-	sexy_spell_entry_set_checked (SEXY_SPELL_ENTRY (topic), FALSE);
+	//s exy_spell_entry_set_checked (S EXY_SPELL_ENTRY (topic), FALSE);
 	gtk_container_add (GTK_CONTAINER (hbox), topic);
 	g_signal_connect (G_OBJECT (topic), "activate",
 							G_CALLBACK (mg_topic_cb), 0);
@@ -2397,7 +2400,7 @@ mg_create_textarea (session *sess, GtkWidget *box)
 
 	gtk_drag_dest_set (GTK_WIDGET (xccv->tview), GTK_DEST_DEFAULT_ALL, dnd_targets, 1,
 							 GDK_ACTION_MOVE | GDK_ACTION_COPY | GDK_ACTION_LINK);
-	g_signal_connect (G_OBJECT (gui->xccv), "drag_data_received",
+	g_signal_connect (GTK_WIDGET (xccv->tview), "drag_data_received",
 							G_CALLBACK (mg_dialog_dnd_drop), NULL);
 /* xyzzy
 */
@@ -2994,9 +2997,10 @@ mg_create_entry (session *sess, GtkWidget *box)
 	g_signal_connect (G_OBJECT (but), "clicked",
 							G_CALLBACK (mg_nickclick_cb), NULL);
 
-	gui->input_box = entry = sexy_spell_entry_new ();
-	sexy_spell_entry_set_checked ((SexySpellEntry *)entry, prefs.hex_gui_input_spell);
-	sexy_spell_entry_set_parse_attributes ((SexySpellEntry *)entry, prefs.hex_gui_input_attr);
+	//gui->input_box = entry = s exy_spell_entry_new ();
+	gui->input_box = entry = gtk_entry_new ();
+	//s exy_spell_entry_set_checked ((S exySpellEntry *)entry, prefs.hex_gui_input_spell);
+	//s exy_spell_entry_set_parse_attributes ((S exySpellEntry *)entry, prefs.hex_gui_input_attr);
 
 	gtk_entry_set_max_length (GTK_ENTRY (gui->input_box), 0);
 	g_signal_connect (G_OBJECT (entry), "activate",
@@ -3010,8 +3014,8 @@ mg_create_entry (session *sess, GtkWidget *box)
 							G_CALLBACK (mg_inputbox_focus), gui);
 	g_signal_connect (G_OBJECT (entry), "populate_popup",
 							G_CALLBACK (mg_inputbox_rightclick), NULL);
-	g_signal_connect (G_OBJECT (entry), "word-check",
-							G_CALLBACK (mg_spellcheck_cb), NULL);
+//	g_signal_connect (G_OBJECT (entry), "word-check",
+//							G_CALLBACK (mg_spellcheck_cb), NULL);
 	gtk_widget_grab_focus (entry);
 
 	if (prefs.hex_gui_input_style)

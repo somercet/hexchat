@@ -43,7 +43,7 @@
 #ifdef WIN32
 #include "../common/fe.h"
 #endif
-#include "sexy-spell-entry.h"
+//#include "s exy-spell-entry.h"
 
 GtkStyle *create_input_style (GtkStyle *);
 
@@ -2074,12 +2074,13 @@ setup_apply_to_sess (session_gui *gui)
 	else
 		gtk_widget_hide (gui->button_box);
 
-	/* update active languages */
+	/* update active languages
 	sexy_spell_entry_deactivate_language((SexySpellEntry *)gui->input_box,NULL);
 	sexy_spell_entry_activate_default_languages((SexySpellEntry *)gui->input_box);
 
 	sexy_spell_entry_set_checked ((SexySpellEntry *)gui->input_box, prefs.hex_gui_input_spell);
 	sexy_spell_entry_set_parse_attributes ((SexySpellEntry *)gui->input_box, prefs.hex_gui_input_attr);
+	*/
 }
 
 static void
