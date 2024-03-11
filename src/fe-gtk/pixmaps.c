@@ -49,6 +49,7 @@ GdkPixbuf *pix_tree_util;
 GdkPixbuf *pix_book;
 GdkPixbuf *pix_hexchat;
 
+/*
 static GdkPixmap *
 pixmap_load_from_file_real (char *file)
 {
@@ -84,6 +85,7 @@ pixmap_load_from_file (char *filename)
 
 	return pix;
 }
+*/
 
 /* load custom icons from <config>/icons, don't mess in system folders */
 static GdkPixbuf *

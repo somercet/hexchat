@@ -1,6 +1,6 @@
 project('hexchat', 'c',
   version: '2.16.2',
-  meson_version: '>= 0.47.0',
+  meson_version: '>= 0.50.0',
   default_options: [
     'c_std=gnu89',
     'buildtype=debugoptimized',
@@ -44,7 +44,7 @@ config_h.set('USE_DBUS', dbus_glib_dep.found())
 config_h.set('USE_PLUGIN', get_option('plugin'))
 
 config_h.set('G_DISABLE_SINGLE_INCLUDES', true)
-config_h.set('GTK_DISABLE_DEPRECATED', true)
+config_h.set('GTK_DISABLE_DEPRECATED', false)
 config_h.set('GTK_DISABLE_SINGLE_INCLUDES', true)
 config_h.set('GDK_PIXBUF_DISABLE_SINGLE_INCLUDES', true)
 config_h.set('GLIB_VERSION_MAX_ALLOWED', 'GLIB_VERSION_2_36')

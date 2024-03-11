@@ -348,6 +348,7 @@ mg_inputbox_cb (GtkWidget *igad, session_gui *gui)
 	g_free (cmd);
 }
 
+//xyzzy to be reconnected
 /*
 static gboolean
 mg_spellcheck_cb (S exySpellEntry *entry, gchar *word, gpointer data)
@@ -554,28 +555,45 @@ mg_focus (session *sess)
 }
 
 static int
-mg_progressbar_update (GtkWidget *bar)
+mg_progressbar_update (GtkWidget *pbar)
 {
-	static int type = 0;
+	GtkProgressBar *bar = GTK_PROGRESS_BAR (pbar);
 	static gdouble pos = 0;
+#ifdef GTK3
+	static gboolean type = FALSE;
+#else
+	static int type = 0;
+#endif
 
 	pos += 0.05;
 	if (pos >= 0.99)
 	{
+
+#ifdef GTK3
+		if (type)
+		{
+			type = FALSE;
+			gtk_progress_bar_set_inverted (bar, FALSE);
+		} else
+		{
+			type = TRUE;
+			gtk_progress_bar_set_inverted (bar, TRUE);
+		}
+#else
 		if (type == 0)
 		{
 			type = 1;
-			gtk_progress_bar_set_orientation ((GtkProgressBar *) bar,
-														 GTK_PROGRESS_RIGHT_TO_LEFT);
+			gtk_progress_bar_set_orientation (bar, GTK_PROGRESS_RIGHT_TO_LEFT);
 		} else
 		{
 			type = 0;
-			gtk_progress_bar_set_orientation ((GtkProgressBar *) bar,
-														 GTK_PROGRESS_LEFT_TO_RIGHT);
+			gtk_progress_bar_set_orientation (bar, GTK_PROGRESS_LEFT_TO_RIGHT);
 		}
+#endif
 		pos = 0.05;
 	}
-	gtk_progress_bar_set_fraction ((GtkProgressBar *) bar, pos);
+
+	gtk_progress_bar_set_fraction (bar, pos);
 	return 1;
 }
 
@@ -2214,11 +2232,13 @@ mg_create_topicbar (session *sess, GtkWidget *box)
 
 /* check if a word is clickable */
 
-//xyzzy easy disconnect, recon in new widget
-/*
-static int
+static int __attribute__ ((unused))
 mg_word_check (XcChatView *xccv, char *word)
 {
+//xyzzy easy disconnect, recon in new widget
+#ifdef GTK3
+	return 0;
+#else
 	session *sess = current_sess;
 	int ret;
 
@@ -2227,15 +2247,18 @@ mg_word_check (XcChatView *xccv, char *word)
 		return WORD_DIALOG;
 
 	return ret;
+#endif
 }
-*/
-/* mouse click inside text area */
 
-//xyzzy easy discon then reconn
-/*
+/* mouse click inside text area */
 static void
 mg_word_clicked (XcChatView *xccv, char *word, GdkEventButton *even)
 {
+//xyzzy easy discon then reconn
+//xyzzy
+#ifdef GTK3
+	return;
+#else
 	session *sess = current_sess;
 	int word_type = 0, start, end;
 	char *tmp;
@@ -2313,8 +2336,8 @@ mg_word_clicked (XcChatView *xccv, char *word, GdkEventButton *even)
 		menu_nickmenu (sess, even, sess->channel, FALSE);
 		break;
 	}
+#endif
 }
-*/
 
 void
 mg_update_xtext (GObject *wid)
@@ -2324,7 +2347,7 @@ mg_update_xtext (GObject *wid)
 
 	xc_chat_view_set_palette (xccv, colors);
 	xc_chat_view_set_max_lines (xccv, prefs.hex_text_max_lines);
-	xc_chat_view_set_background (xccv, channelwin_pix);
+	xc_chat_view_set_background (xccv, prefs.hex_text_background);
 	xc_chat_view_set_wordwrap (xccv, prefs.hex_text_wordwrap);
 	xc_chat_view_set_show_marker (xccv, prefs.hex_text_show_marker);
 	xc_chat_view_set_show_separator (xccv, prefs.hex_text_indent ? prefs.hex_text_show_sep : 0);
@@ -2344,8 +2367,7 @@ mg_create_textarea (session *sess, GtkWidget *box)
 	GtkWidget *inbox, *vbox, *frame, *sw;
 	XcChatView *xccv;
 	session_gui *gui = sess->gui;
-/* xyzzy
-*/
+
 	static const GtkTargetEntry dnd_targets[] =
 	{
 		{"text/uri-list", 0, 1}
@@ -2380,7 +2402,8 @@ mg_create_textarea (session *sess, GtkWidget *box)
 
 //wyzzy easy here we discon word_click
 	//g_signal_connect (G_OBJECT (x text), "word_click",
-	//						G_CALLBACK (mg_word_clicked), NULL);
+	g_signal_connect (G_OBJECT (xccv), "word_click",
+							G_CALLBACK (mg_word_clicked), NULL);
 
 //wyzzy easy turn vscroll into scrlldwin
 	//gui->vscrollbar = gtk_vscrollbar_new (GTK_XTEXT (x text)->adj);
@@ -2400,10 +2423,9 @@ mg_create_textarea (session *sess, GtkWidget *box)
 
 	gtk_drag_dest_set (GTK_WIDGET (xccv->tview), GTK_DEST_DEFAULT_ALL, dnd_targets, 1,
 							 GDK_ACTION_MOVE | GDK_ACTION_COPY | GDK_ACTION_LINK);
+//wyzzy
 	g_signal_connect (GTK_WIDGET (xccv->tview), "drag_data_received",
 							G_CALLBACK (mg_dialog_dnd_drop), NULL);
-/* xyzzy
-*/
 }
 
 static GtkWidget *
@@ -3807,11 +3829,14 @@ mg_is_gui_target (GdkDragContext *context)
 gboolean
 mg_drag_begin_cb (GtkWidget *widget, GdkDragContext *context, gpointer userdata)
 {
+//xyzzy
+#ifdef GTK3
+#else
 	int width, height;
 	GdkColormap *cmap;
 	GdkPixbuf *pix, *pix2;
 
-	/* ignore file drops */
+	// ignore file drops
 	if (!mg_is_gui_target (context))
 		return FALSE;
 
@@ -3825,6 +3850,7 @@ mg_drag_begin_cb (GtkWidget *widget, GdkDragContext *context, gpointer userdata)
 
 	gtk_drag_set_icon_pixbuf (context, pix2, 0, 0);
 	g_object_set_data (G_OBJECT (widget), "ico", pix2);
+#endif
 
 	return TRUE;
 }
@@ -3867,9 +3893,13 @@ mg_drag_drop_cb (GtkWidget *widget, GdkDragContext *context, int x, int y, guint
 
 /* draw highlight rectangle in the destination */
 
+//xyzzy GdkGC code for DnD
 gboolean
 mg_drag_motion_cb (GtkWidget *widget, GdkDragContext *context, int x, int y, guint time, gpointer scbar)
 {
+//xyzzy
+#ifdef GTK3
+#else
 	GdkGC *gc;
 	GdkColor col;
 	GdkGCValues val;
@@ -3878,11 +3908,11 @@ mg_drag_motion_cb (GtkWidget *widget, GdkDragContext *context, int x, int y, gui
 	GdkDrawable *draw;
 	GtkAllocation allocation;
 
-	/* ignore file drops */
+	// ignore file drops
 	if (!mg_is_gui_target (context))
 		return FALSE;
 
-	if (scbar)	/* scrollbar */
+	if (scbar)	// scrollbar
 	{
 		gtk_widget_get_allocation (widget, &allocation);
 		ox = allocation.x;
@@ -3911,9 +3941,10 @@ mg_drag_motion_cb (GtkWidget *widget, GdkDragContext *context, int x, int y, gui
 	gdk_gc_set_foreground (gc, &col);
 
 	half = height / 2;
+#endif
 
 #if 0
-	/* are both tree/userlist on the same side? */
+	// are both tree/userlist on the same side?
 	paned = (GtkPaned *)widget->parent->parent;
 	if (paned->child1 != NULL && paned->child2 != NULL)
 	{
@@ -3924,6 +3955,8 @@ mg_drag_motion_cb (GtkWidget *widget, GdkDragContext *context, int x, int y, gui
 	}
 #endif
 
+#ifdef GTK3
+#else
 	if (y < half)
 	{
 		gdk_draw_rectangle (draw, gc, FALSE, 1 + ox, 2 + oy, width - 3, half - 4);
@@ -3938,6 +3971,7 @@ mg_drag_motion_cb (GtkWidget *widget, GdkDragContext *context, int x, int y, gui
 	}
 
 	g_object_unref (gc);
+#endif
 
 	return TRUE;
 }

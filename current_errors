@@ -1,0 +1,3 @@
+Gtk:ERROR:../gtk/gtkrbtree.c:471:_gtk_rbtree_insert_after: assertion failed: (_gtk_rbtree_is_nil (tree->root))
+Bail out! Gtk:ERROR:../gtk/gtkrbtree.c:471:_gtk_rbtree_insert_after: assertion failed: (_gtk_rbtree_is_nil (tree->root))
+

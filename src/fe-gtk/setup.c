@@ -1425,7 +1425,7 @@ setup_color_ok_cb (GtkWidget *button, GtkWidget *dialog)
 
 	gtk_color_selection_get_current_color (GTK_COLOR_SELECTION (gtk_color_selection_dialog_get_color_selection (cdialog)), col);
 
-	gdk_colormap_alloc_color (gtk_widget_get_colormap (button), col, TRUE, TRUE);
+//	gdk_colormap_alloc_color (gtk_widget_get_colormap (button), col, TRUE, TRUE);
 
 	style = gtk_style_new ();
 	style->bg[0] = *col;
@@ -1433,7 +1433,7 @@ setup_color_ok_cb (GtkWidget *button, GtkWidget *dialog)
 	g_object_unref (style);
 
 	/* is this line correct?? */
-	gdk_colormap_free_colors (gtk_widget_get_colormap (button), &old_color, 1);
+//	gdk_colormap_free_colors (gtk_widget_get_colormap (button), &old_color, 1);
 
 	gtk_widget_destroy (dialog);
 }
@@ -2114,9 +2114,10 @@ setup_apply_real (int new_pix, int do_ulist, int do_layout, int do_identd)
 
 	if (new_pix)
 	{
-		if (channelwin_pix)
-			g_object_unref (channelwin_pix);
-		channelwin_pix = pixmap_load_from_file (prefs.hex_text_background);
+		;
+//		if (channelwin_pix)
+//			g_object_unref (channelwin_pix);
+//		channelwin_pix = load_pixmap (prefs.hex_text_background);
 	}
 
 	input_style = create_input_style (input_style);

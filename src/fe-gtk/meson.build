@@ -21,26 +21,36 @@ hexchat_gtk_sources = [
   'rawlog.c',
   'servlistgui.c',
   'setup.c',
-#  's exy-spell-entry.c',
   'textgui.c',
   'urlgrab.c',
   'userlistgui.c',
-#  'xtext.c'
   'xcchatview.c'
 ]
 
-gtk_dep = dependency('gtk+-2.0', version: '>= 2.24.0')
+#gtk_dep = dependency('gtk+-2.0')
+gtk_dep = dependency('gtk+-3.0')
 hexchat_gtk_deps = [
   hexchat_common_dep,
   libgmodule_dep, # used by libs exy
-  gtk_dep
+  gtk_dep,
 ]
 
+# for GTK+ 3
+foreach target : gtk_dep.get_pkgconfig_variable('targets').split()
+  if target == 'x11'
+    hexchat_gtk_deps += dependency(target)
+  endif
+endforeach
+
+# for GTK+ 2
 if gtk_dep.get_pkgconfig_variable('target') == 'x11'
   hexchat_gtk_deps += dependency('x11')
 endif
 
-hexchat_gtk_cflags = []
+hexchat_gtk_cflags = [
+  '-Wno-deprecated-declarations',
+  '-DGTK3'
+]
 
 hexchat_gtk_ldflags = []
 

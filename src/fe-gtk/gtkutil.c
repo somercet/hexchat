@@ -752,27 +752,35 @@ gtkutil_treeview_get_selected (GtkTreeView *view, GtkTreeIter *iter_ret, ...)
 gboolean
 gtkutil_tray_icon_supported (GtkWindow *window)
 {
-#ifndef GDK_WINDOWING_X11
-	return TRUE;
-#else
+#ifdef GDK_WINDOWING_X11
 	GdkScreen *screen = gtk_window_get_screen (window);
 	GdkDisplay *display = gdk_screen_get_display (screen);
 	int screen_number = gdk_screen_get_number (screen);
-	Display *xdisplay = gdk_x11_display_get_xdisplay (display);
-	char *selection_name = g_strdup_printf ("_NET_SYSTEM_TRAY_S%d", screen_number);
-	Atom selection_atom = XInternAtom (xdisplay, selection_name, False);
-	Window tray_window = None;
 
-	XGrabServer (xdisplay);
-
-	tray_window = XGetSelectionOwner (xdisplay, selection_atom);
-
-	XUngrabServer (xdisplay);
-	XFlush (xdisplay);
-	g_free (selection_name);
-
-	return (tray_window != None);
+#ifdef GTK3
+	if (GDK_IS_X11_DISPLAY (display))
+	{
 #endif
+		Display *xdisplay = gdk_x11_display_get_xdisplay (display);
+		char *selection_name = g_strdup_printf ("_NET_SYSTEM_TRAY_S%d", screen_number);
+		Atom selection_atom = XInternAtom (xdisplay, selection_name, False);
+		Window tray_window = None;
+
+		XGrabServer (xdisplay);
+
+		tray_window = XGetSelectionOwner (xdisplay, selection_atom);
+
+		XUngrabServer (xdisplay);
+		XFlush (xdisplay);
+		g_free (selection_name);
+
+		return (tray_window != None);
+#ifdef GTK3
+	}
+	else
+#endif
+#endif
+		return TRUE;
 }
 
 #if defined (WIN32) || defined (__APPLE__)

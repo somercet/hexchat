@@ -90,17 +90,21 @@ GdkColor colors[] = {
 void
 palette_alloc (GtkWidget * widget)
 {
+#ifdef GTK3
+#else
 	int i;
 	static int done_alloc = FALSE;
 	GdkColormap *cmap;
 
-	if (!done_alloc)		  /* don't do it again */
+	if (!done_alloc)		  // don't do it again
 	{
 		done_alloc = TRUE;
 		cmap = gtk_widget_get_colormap (widget);
 		for (i = MAX_COL; i >= 0; i--)
 			gdk_colormap_alloc_color (cmap, &colors[i], FALSE, TRUE);
 	}
+#endif
+	return;
 }
 
 void
