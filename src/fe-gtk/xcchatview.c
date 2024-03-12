@@ -245,7 +245,7 @@ xc_chat_view_append_indent (XcChatView *xccv,
 
   down = is_scrolled_down (xccv);
 
-  g_mutex_init (&xccv->mutex);
+  g_mutex_lock (&xccv->mutex);
   gtk_list_store_append (xccv->store, &iter);
   gtk_list_store_set (xccv->store, &iter,
     SFS_HANDLE, h,
@@ -254,7 +254,7 @@ xc_chat_view_append_indent (XcChatView *xccv,
     -1);
 
   xc_chat_view_update_line_count (xccv, 1);
-  g_mutex_clear (&xccv->mutex);
+  g_mutex_unlock (&xccv->mutex);
 
   if (down)
     xc_chat_view_push_down_scrollbar (xccv);
@@ -271,15 +271,15 @@ xc_chat_view_prepend0 (	XcChatView	*xccv,
 			GDateTime	*dtime,
 			gchar		*handle,
 			gchar		*message ) {
-  g_mutex_init (&xccv->mutex);
+  g_mutex_lock (&xccv->mutex);
   gtk_list_store_insert_with_values (xccv->store, NULL, 0,
     SFS_HANDLE, handle,
     SFS_MESSAG, message,
     SFS_GDTIME, dtime,
     -1);
-  g_mutex_clear (&xccv->mutex);
 
   xc_chat_view_update_line_count (xccv, 1);
+  g_mutex_unlock (&xccv->mutex);
 }
 
 
@@ -293,16 +293,17 @@ xc_chat_view_append0 (	XcChatView	*xccv,
 
   down = is_scrolled_down (xccv);
 
-  g_mutex_init (&xccv->mutex);
+  g_mutex_lock (&xccv->mutex);
   gtk_list_store_append (xccv->store, &iter);
   gtk_list_store_set (xccv->store, &iter,
     SFS_HANDLE, handle,
     SFS_MESSAG, message,
     SFS_GDTIME, dtime,
     -1);
-  g_mutex_clear (&xccv->mutex);
 
   xc_chat_view_update_line_count (xccv, 1);
+  g_mutex_unlock (&xccv->mutex);
+
 
   if (down)
     xc_chat_view_push_down_scrollbar (xccv);
@@ -313,12 +314,10 @@ static void
 xc_chat_view_update_line_count (XcChatView *xccv, gint l) {
 	gint c;
 
-	g_mutex_init (&xccv->mutex);
 	xccv->lines_current += l;
 	c = xccv->lines_current - xccv->lines_max;
 	if (c > 0)
 		xc_chat_view_clear (xccv, c);
-	g_mutex_clear (&xccv->mutex);
 }
 
 
