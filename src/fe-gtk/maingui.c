@@ -24,6 +24,10 @@
 
 #include <gdk/gdkkeysyms.h>
 
+#ifdef USE_GSPELL
+#include <gspell/gspell.h>
+#endif
+
 #include "xc_search_flags.h"
 
 #include "../common/hexchat.h"
@@ -52,9 +56,7 @@
 #include "chanview.h"
 #include "pixmaps.h"
 #include "plugin-tray.h"
-//#include "x text.h"
 #include "xcchatview.h"
-//#include "s exy-spell-entry.h"
 #include "gtkutil.h"
 
 #ifdef G_OS_WIN32
@@ -348,23 +350,6 @@ mg_inputbox_cb (GtkWidget *igad, session_gui *gui)
 	g_free (cmd);
 }
 
-//xyzzy to be reconnected
-/*
-static gboolean
-mg_spellcheck_cb (S exySpellEntry *entry, gchar *word, gpointer data)
-{
-	// This can cause freezes on long words, nicks arn't very long anyway.
-	if (strlen (word) > 20)
-		return TRUE;
-
-	// Ignore anything we think is a valid url
-	if (url_check_word (word) != 0)
-		return FALSE;
-
-	return TRUE;
-}
-*/
-
 #if 0
 static gboolean
 has_key (char *modes)
@@ -557,29 +542,17 @@ mg_focus (session *sess)
 static int
 mg_progressbar_update (GtkWidget *pbar)
 {
+#ifdef GTK3
+	gtk_progress_bar_pulse (GTK_PROGRESS_BAR (pbar));
+	return 1;
+#else
 	GtkProgressBar *bar = GTK_PROGRESS_BAR (pbar);
 	static gdouble pos = 0;
-#ifdef GTK3
-	static gboolean type = FALSE;
-#else
 	static int type = 0;
-#endif
 
 	pos += 0.05;
 	if (pos >= 0.99)
 	{
-
-#ifdef GTK3
-		if (type)
-		{
-			type = FALSE;
-			gtk_progress_bar_set_inverted (bar, FALSE);
-		} else
-		{
-			type = TRUE;
-			gtk_progress_bar_set_inverted (bar, TRUE);
-		}
-#else
 		if (type == 0)
 		{
 			type = 1;
@@ -589,12 +562,12 @@ mg_progressbar_update (GtkWidget *pbar)
 			type = 0;
 			gtk_progress_bar_set_orientation (bar, GTK_PROGRESS_LEFT_TO_RIGHT);
 		}
-#endif
 		pos = 0.05;
 	}
 
 	gtk_progress_bar_set_fraction (bar, pos);
 	return 1;
+#endif
 }
 
 void
@@ -684,21 +657,6 @@ mg_restore_entry (GtkWidget *entry, char **text)
 		gtk_entry_set_text (GTK_ENTRY (entry), "");
 	}
 	gtk_editable_set_position (GTK_EDITABLE (entry), -1);
-}
-
-static void
-mg_restore_speller (GtkWidget *entry, char **text)
-{
-	if (*text)
-	{
-		SPELL_ENTRY_SET_TEXT (entry, *text);
-		g_free (*text);
-		*text = NULL;
-	} else
-	{
-		SPELL_ENTRY_SET_TEXT (entry, "");
-	}
-	SPELL_ENTRY_SET_POS (entry, -1);
 }
 
 void
@@ -913,7 +871,6 @@ mg_populate (session *sess)
 
 	/* restore all the GtkEntry's */
 	mg_restore_entry (gui->topic_entry, &res->topic_text);
-	mg_restore_speller (gui->input_box, &res->input_text);
 	mg_restore_entry (gui->key_entry, &res->key_text);
 	mg_restore_entry (gui->limit_entry, &res->limit_text);
 	mg_restore_label (gui->laginfo, &res->lag_text);
@@ -2204,28 +2161,33 @@ mg_create_topicbar (session *sess, GtkWidget *box)
 	GtkWidget *hbox, *topic, *bbox;
 	session_gui *gui = sess->gui;
 
-	gui->topic_bar = hbox = gtk_hbox_new (FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (box), hbox, 0, 0, 0);
+	gui->topic_bar = hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_box_pack_start (GTK_BOX (box), hbox, FALSE, FALSE, 0);
 
 	if (!gui->is_tab)
 		sess->res->tab = NULL;
 
-	//gui->topic_entry = topic = s exy_spell_entry_new ();
 	gui->topic_entry = topic = gtk_entry_new ();
 	gtk_widget_set_name (topic, "hexchat-inputbox");
-	//s exy_spell_entry_set_checked (S EXY_SPELL_ENTRY (topic), FALSE);
-	gtk_container_add (GTK_CONTAINER (hbox), topic);
+#ifdef USE_GSPELL
+	if (prefs.hex_gui_input_spell)
+	{
+		GspellEntry *gspell_entry2 = gspell_entry_get_from_gtk_entry (GTK_ENTRY (topic));
+		gspell_entry_basic_setup (gspell_entry2);
+	}
+#endif
+	gtk_box_pack_start (GTK_BOX (hbox), topic, TRUE, TRUE, 0);
 	g_signal_connect (G_OBJECT (topic), "activate",
 							G_CALLBACK (mg_topic_cb), 0);
 
 	if (prefs.hex_gui_input_style)
 		mg_apply_entry_style (topic);
 
-	gui->topicbutton_box = bbox = gtk_hbox_new (FALSE, 0);
+	gui->topicbutton_box = bbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_pack_start (GTK_BOX (hbox), bbox, 0, 0, 0);
 	mg_create_chanmodebuttons (gui, bbox);
 
-	gui->dialogbutton_box = bbox = gtk_hbox_new (FALSE, 0);
+	gui->dialogbutton_box = bbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_pack_start (GTK_BOX (hbox), bbox, 0, 0, 0);
 	mg_create_dialogbuttons (bbox);
 }
@@ -2364,7 +2326,7 @@ mg_update_xtext (GObject *wid)
 static void
 mg_create_textarea (session *sess, GtkWidget *box)
 {
-	GtkWidget *inbox, *vbox, *frame, *sw;
+	GtkWidget *sw;
 	XcChatView *xccv;
 	session_gui *gui = sess->gui;
 
@@ -2378,30 +2340,20 @@ mg_create_textarea (session *sess, GtkWidget *box)
 		{"HEXCHAT_USERLIST", GTK_TARGET_SAME_APP, 75 }
 	};
 
-	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_container_add (GTK_CONTAINER (box), vbox);
-	inbox = gtk_hbox_new (FALSE, 2);
-	gtk_container_add (GTK_CONTAINER (vbox), inbox);
-
-	frame = gtk_frame_new (NULL);
-	gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_IN);
-	gtk_container_add (GTK_CONTAINER (inbox), frame);
-
 	xccv = xc_chat_view_new (); //(colors, TRUE);
-	gui->xccv = (GObject *) xccv;
+	gui->xccv = G_OBJECT (xccv);
 	xc_chat_view_set_max_indent (xccv, prefs.hex_text_max_indent);
 	xc_chat_view_set_thin_separator (xccv, prefs.hex_text_thin_sep);
 	//gtk_x text_set_urlcheck_function (x text, mg_word_check);
 	xc_chat_view_set_max_lines (xccv, prefs.hex_text_max_lines);
 
 	sw = gtk_scrolled_window_new (NULL, NULL);
-	gtk_container_add (GTK_CONTAINER (frame), sw);
+   gtk_box_pack_start (GTK_BOX (box), sw, TRUE, TRUE, 0);
 	gtk_container_add (GTK_CONTAINER (sw), GTK_WIDGET (xccv->tview));
 
 	mg_update_xtext (gui->xccv);
 
 //wyzzy easy here we discon word_click
-	//g_signal_connect (G_OBJECT (x text), "word_click",
 	g_signal_connect (G_OBJECT (xccv), "word_click",
 							G_CALLBACK (mg_word_clicked), NULL);
 
@@ -2585,17 +2537,17 @@ mg_create_center (session *sess, session_gui *gui, GtkWidget *box)
 	GtkWidget *vbox, *hbox, *book;
 
 	/* sep between top and bottom of left side */
-	gui->vpane_left = gtk_vpaned_new ();
+	gui->vpane_left = gtk_paned_new (GTK_ORIENTATION_VERTICAL);
 
 	/* sep between top and bottom of right side */
-	gui->vpane_right = gtk_vpaned_new ();
+	gui->vpane_right = gtk_paned_new (GTK_ORIENTATION_VERTICAL);
 
 	/* sep between left and xtext */
-	gui->hpane_left = gtk_hpaned_new ();
+	gui->hpane_left = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
 	gtk_paned_set_position (GTK_PANED (gui->hpane_left), prefs.hex_gui_pane_left_size);
 
 	/* sep between xtext and right side */
-	gui->hpane_right = gtk_hpaned_new ();
+	gui->hpane_right = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
 
 	if (prefs.hex_gui_win_swap)
 	{
@@ -2616,13 +2568,13 @@ mg_create_center (session *sess, session_gui *gui, GtkWidget *box)
 	gtk_notebook_set_show_border (GTK_NOTEBOOK (book), FALSE);
 	gtk_paned_pack1 (GTK_PANED (gui->hpane_right), book, TRUE, TRUE);
 
-	hbox = gtk_hbox_new (FALSE, 0);
+	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_paned_pack1 (GTK_PANED (gui->vpane_right), hbox, FALSE, TRUE);
 	mg_create_userlist (gui, hbox);
 
 	gui->user_box = hbox;
 
-	vbox = gtk_vbox_new (FALSE, 3);
+	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 3);
 	gtk_notebook_append_page (GTK_NOTEBOOK (book), vbox, NULL);
 	mg_create_topicbar (sess, vbox);
 
@@ -3019,11 +2971,16 @@ mg_create_entry (session *sess, GtkWidget *box)
 	g_signal_connect (G_OBJECT (but), "clicked",
 							G_CALLBACK (mg_nickclick_cb), NULL);
 
-	//gui->input_box = entry = s exy_spell_entry_new ();
 	gui->input_box = entry = gtk_entry_new ();
-	//s exy_spell_entry_set_checked ((S exySpellEntry *)entry, prefs.hex_gui_input_spell);
-	//s exy_spell_entry_set_parse_attributes ((S exySpellEntry *)entry, prefs.hex_gui_input_attr);
-
+#ifdef USE_GSPELL
+	if (prefs.hex_gui_input_spell)
+	{
+		GspellEntry *gspell_entry = gspell_entry_get_from_gtk_entry (GTK_ENTRY (entry));
+		gspell_entry_basic_setup (gspell_entry);
+		//s exy_spell_entry_set_parse_attributes ((S exySpellEntry *)entry, prefs.hex_gui_input_attr);
+		// TODO: can we plug in multi-langs using our text_spell_langs?  And what exactly is gui_input_attr?
+	}
+#endif
 	gtk_entry_set_max_length (GTK_ENTRY (gui->input_box), 0);
 	g_signal_connect (G_OBJECT (entry), "activate",
 							G_CALLBACK (mg_inputbox_cb), gui);
@@ -3036,8 +2993,7 @@ mg_create_entry (session *sess, GtkWidget *box)
 							G_CALLBACK (mg_inputbox_focus), gui);
 	g_signal_connect (G_OBJECT (entry), "populate_popup",
 							G_CALLBACK (mg_inputbox_rightclick), NULL);
-//	g_signal_connect (G_OBJECT (entry), "word-check",
-//							G_CALLBACK (mg_spellcheck_cb), NULL);
+
 	gtk_widget_grab_focus (entry);
 
 	if (prefs.hex_gui_input_style)

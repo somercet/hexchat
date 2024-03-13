@@ -19,6 +19,7 @@ libgmodule_dep = dependency('gmodule-2.0')
 libcanberra_dep = dependency('libcanberra', version: '>= 0.22',
                              required: get_option('libcanberra'))
 dbus_glib_dep = dependency('dbus-glib-1', required: get_option('dbus'))
+gspell_dep = dependency('gspell-1', required: get_option('Gspell'))
 
 global_deps = []
 if cc.get_id() == 'msvc'
@@ -47,7 +48,7 @@ config_h.set('G_DISABLE_SINGLE_INCLUDES', true)
 config_h.set('GTK_DISABLE_DEPRECATED', false)
 config_h.set('GTK_DISABLE_SINGLE_INCLUDES', true)
 config_h.set('GDK_PIXBUF_DISABLE_SINGLE_INCLUDES', true)
-config_h.set('GLIB_VERSION_MAX_ALLOWED', 'GLIB_VERSION_2_36')
+config_h.set('GLIB_VERSION_MAX_ALLOWED', 'GLIB_VERSION_CUR_STABLE')
 config_h.set('GLIB_VERSION_MIN_REQUIRED', 'GLIB_VERSION_2_36')
 
 # Detected features
@@ -183,6 +184,7 @@ if meson.version().version_compare('>= 0.53.0')
     'Plugin Support': get_option('plugin'),
     'DBus Support': dbus_glib_dep.found(),
     'libcanberra': libcanberra_dep.found(),
+    'Gspell': gspell_dep.found(),
   }, section: 'Features')
 
   summary({

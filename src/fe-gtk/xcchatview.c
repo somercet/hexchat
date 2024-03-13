@@ -14,15 +14,13 @@
 #include "xcchatview.h"
 #endif
 
-/*
 enum {
-	SEARCH_RESULT_CREATED,
-	LAST_SIGNAL
+	XCCV_WORD_CLICK = 1,
+	XCCV_LAST_SIGNAL
 };
 
 static guint
-xc_chat_view_signals[LAST_SIGNAL] = { 0 };
-*/
+xc_chat_view_signals[XCCV_LAST_SIGNAL] = { 0 };
 
 /* static func declarations */
 static void	cell_func_dtime (	GtkTreeViewColumn	*tree_column,
@@ -127,9 +125,7 @@ xc_chat_view_class_init (XcChatViewClass *klass)
   gobject_class->dispose = xc_chat_view_dispose;
 
   /* property and signal definitions go here */
-
-/*
-  xc_chat_view_signals[SEARCH_RESULT_CREATED] = g_signal_new("search-result-created",
+  xc_chat_view_signals[XCCV_WORD_CLICK] = g_signal_new("word_click", //place-holder for per-word-menu
 	XC_TYPE_CHAT_VIEW,	// G_TYPE_FROM_INSTANCE(xccv),
 	G_SIGNAL_RUN_LAST,
 	0,		// class_offset *fp
@@ -137,9 +133,7 @@ xc_chat_view_class_init (XcChatViewClass *klass)
 	NULL,		// accu data
 	NULL,		// GSignalCMarshaller
 	G_TYPE_NONE,	// return type
-	0);		// param #
-		// params G_TYPE_UINT);
-*/
+	0);		// param # // params G_TYPE_UINT);
 }
 
 

@@ -838,13 +838,8 @@ menu_setting_foreach (void (*callback) (session *), int id, guint state)
 		{
 			if (sess->gui->is_tab)
 				maindone = TRUE;
-			if (id != -1) // TODO: find out why we're sending RadioMenuItems here
-			{
-				if (GTK_IS_RADIO_MENU_ITEM (sess->gui->menu_item[id]))
-					g_printerr ("Check v Radio problem pointer: %p\n", (void *) sess->gui->menu_item[id]);
-				else
-					gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (sess->gui->menu_item[id]), state);
-			}
+			if (id != -1 && sess->gui->menu_item[id] != NULL) // added to close error
+				gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (sess->gui->menu_item[id]), state);
 			if (callback)
 				callback (sess);
 		}

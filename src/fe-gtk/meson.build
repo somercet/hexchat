@@ -27,7 +27,6 @@ hexchat_gtk_sources = [
   'xcchatview.c'
 ]
 
-#gtk_dep = dependency('gtk+-2.0')
 gtk_dep = dependency('gtk+-3.0')
 hexchat_gtk_deps = [
   hexchat_common_dep,
@@ -47,10 +46,17 @@ if gtk_dep.get_pkgconfig_variable('target') == 'x11'
   hexchat_gtk_deps += dependency('x11')
 endif
 
+
 hexchat_gtk_cflags = [
   '-Wno-deprecated-declarations',
   '-DGTK3'
 ]
+
+gspell_dep = dependency('gspell-1', required: get_option('Gspell'))
+if (gspell_dep.found())
+  hexchat_gtk_deps += gspell_dep
+  hexchat_gtk_cflags += '-DUSE_GSPELL'
+endif
 
 hexchat_gtk_ldflags = []
 
