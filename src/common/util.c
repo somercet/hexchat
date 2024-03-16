@@ -1009,14 +1009,12 @@ util_exec (const char *cmd)
 unsigned long
 make_ping_time (void)
 {
-#ifndef WIN32
-	struct timeval timev;
-	gettimeofday (&timev, 0);
-#else
-	GTimeVal timev;
-	g_get_current_time (&timev);
-#endif
-	return (timev.tv_sec - 50000) * 1000 + timev.tv_usec/1000;
+	GDateTime *gdt = g_date_time_new_now_utc ();
+	gint64 secs = g_date_time_to_unix (gdt);
+	gint usecs = g_date_time_get_microsecond (gdt);
+	g_date_time_unref (gdt);
+
+	return (secs - 50000) * 1000 + usecs/1000;
 }
 
 int

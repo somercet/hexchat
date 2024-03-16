@@ -1,3 +1,6 @@
 Gtk:ERROR:../gtk/gtkrbtree.c:471:_gtk_rbtree_insert_after: assertion failed: (_gtk_rbtree_is_nil (tree->root))
 Bail out! Gtk:ERROR:../gtk/gtkrbtree.c:471:_gtk_rbtree_insert_after: assertion failed: (_gtk_rbtree_is_nil (tree->root))
 
+(hexchat:20816): Gtk-CRITICAL **: 23:49:27.542: gtk_widget_get_scale_factor: assertion 'GTK_IS_WIDGET (widget)' failed
+#3  0x00007ffff77f652e in gtk_status_icon_update_image.isra.0 (status_icon=<optimized out>) at ../gtk/deprecated/gtkstatusicon.c:1409
+

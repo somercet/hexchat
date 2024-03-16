@@ -49,7 +49,7 @@ endif
 
 hexchat_gtk_cflags = [
   '-Wno-deprecated-declarations',
-  '-DGTK3'
+  '-DGTK3',
 ]
 
 gspell_dep = dependency('gspell-1', required: get_option('Gspell'))
