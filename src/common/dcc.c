@@ -100,9 +100,10 @@ static int new_id(void)
 	return id++;
 }
 
+// TODO: fix these two funcs to work with GDateTime
 static double
-timeval_diff (GTimeVal *greater,
-				 GTimeVal *less)
+timeval_diff (struct newtimeval *greater,
+				 struct newtimeval *less)
 {
 	long usecdiff;
 	double result;
@@ -127,7 +128,7 @@ dcc_unthrottle (struct DCC *dcc)
 static void
 dcc_calc_cps (struct DCC *dcc)
 {
-	GTimeVal now;
+	struct newtimeval now;
 	gint64 oldcps;
 	double timediff, startdiff;
 	int glob_throttle_bit, wasthrottled;
@@ -135,7 +136,10 @@ dcc_calc_cps (struct DCC *dcc)
 	int glob_limit;
 	goffset pos, posdiff;
 
-	g_get_current_time (&now);
+	GDateTime *gdt = g_date_time_new_now_utc ();
+	now.tv_sec = g_date_time_to_unix (gdt);
+	now.tv_usec = g_date_time_get_microsecond (gdt);
+	g_date_time_unref (gdt);
 
 	/* the pos we use for sends is an average
 		between pos and ack */

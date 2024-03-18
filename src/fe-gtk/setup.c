@@ -1407,11 +1407,11 @@ setup_color_ok_cb (GtkWidget *button, GtkWidget *dialog)
 {
 	GtkColorSelectionDialog *cdialog = GTK_COLOR_SELECTION_DIALOG (dialog);
 	GdkColor *col;
-	GdkColor old_color;
+	//GdkColor old_color;
 	GtkStyle *style;
 
 	col = g_object_get_data (G_OBJECT (button), "c");
-	old_color = *col;
+	//old_color = *col;
 
 	button = g_object_get_data (G_OBJECT (button), "b");
 

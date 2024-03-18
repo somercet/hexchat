@@ -25,6 +25,13 @@
 #ifndef HEXCHAT_DCC_H
 #define HEXCHAT_DCC_H
 
+
+struct newtimeval {
+	gint64 tv_sec; // = g_date_time_to_unix (gdt)
+	gint tv_usec;  // = g_date_time_get_microsecond (gdt)
+};
+
+
 enum dcc_state {
 	STAT_QUEUED = 0,
 	STAT_ACTIVE,
@@ -59,7 +66,7 @@ struct DCC
 	int resume_error;
 	int resume_errno;
 
-	GTimeVal lastcpstv, firstcpstv;
+	struct newtimeval lastcpstv, firstcpstv;
 	goffset lastcpspos;
 	gint64 maxcps;
 
